@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <title>搭建hexo+github博客和其中的一些小问题 | Aruk4s</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="hexo,">
+  
+
+  <meta name="description" content="前言趁着国庆放假，终于把自己的博客搭好了，还是挺有成就感得，记录一下 搭建正文 : 一、本地与Github的连接要想搭建好博客，就得先连接到Github上 1.一些必备的软件 Node.js 安装好之后，在CMD中输入node -v和npm -v，如果出现版本号，代表安装成功.   Git Git安装好之后，在桌面右键会出现：    2.注册一个github账号 先进入github，然后点击右上角">
+<meta name="keywords" content="hexo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="搭建hexo+github博客和其中的一些小问题">
+<meta property="og:url" content="http://yoursite.com/2019/10/03/build-a-blog/index.html">
+<meta property="og:site_name" content="Aruk4s">
+<meta property="og:description" content="前言趁着国庆放假，终于把自己的博客搭好了，还是挺有成就感得，记录一下 搭建正文 : 一、本地与Github的连接要想搭建好博客，就得先连接到Github上 1.一些必备的软件 Node.js 安装好之后，在CMD中输入node -v和npm -v，如果出现版本号，代表安装成功.   Git Git安装好之后，在桌面右键会出现：    2.注册一个github账号 先进入github，然后点击右上角">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://i.loli.net/2019/10/03/YQEqoC2VR8tf5Dh.png">
+<meta property="og:image" content="https://i.loli.net/2019/10/03/gKZiSRB9jDbdfcY.png">
+<meta property="og:image" content="https://i.loli.net/2019/10/03/1W6STFuaQCDIU7s.png">
+<meta property="og:image" content="https://i.loli.net/2019/10/03/clVHLgqGdfJ8W6x.png">
+<meta property="og:image" content="https://i.loli.net/2019/10/03/GI6i4wEpoBc5gQx.png">
+<meta property="og:image" content="https://i.loli.net/2019/10/03/atADwRP16d59iFZ.png">
+<meta property="og:image" content="https://i.loli.net/2019/10/03/D7VKGMNkr8x4twF.png">
+<meta property="og:image" content="https://i.loli.net/2019/10/03/T1Ek5FHLS3ajC6e.png">
+<meta property="og:image" content="https://i.loli.net/2019/10/03/54IZmTwNnsejHhv.png">
+<meta property="og:image" content="https://i.loli.net/2019/10/03/kjhBZVsFUvza3lH.png">
+<meta property="og:image" content="https://i.loli.net/2019/10/04/7u5lTiQec3BoPhp.png">
+<meta property="og:image" content="https://i.loli.net/2019/10/04/r5TtMIb8icGX6Sp.png">
+<meta property="og:image" content="https://i.loli.net/2019/10/04/2d8aHT7IspmiYSA.png">
+<meta property="og:image" content="https://i.loli.net/2019/10/04/pRgvEuz3ibGwx4Q.png">
+<meta property="og:updated_time" content="2019-10-04T06:22:34.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="搭建hexo+github博客和其中的一些小问题">
+<meta name="twitter:description" content="前言趁着国庆放假，终于把自己的博客搭好了，还是挺有成就感得，记录一下 搭建正文 : 一、本地与Github的连接要想搭建好博客，就得先连接到Github上 1.一些必备的软件 Node.js 安装好之后，在CMD中输入node -v和npm -v，如果出现版本号，代表安装成功.   Git Git安装好之后，在桌面右键会出现：    2.注册一个github账号 先进入github，然后点击右上角">
+<meta name="twitter:image" content="https://i.loli.net/2019/10/03/YQEqoC2VR8tf5Dh.png">
+
+  
+
+  
+    <link rel="icon" href="/favicon/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbeddx" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css">
+  
+
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-38189205-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?57e94d016e201fba3603a8a2b0263af0";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  
+  <script type="text/javascript">
+	(function(){
+	    var bp = document.createElement('script');
+	    var curProtocol = window.location.protocol.split(':')[0];
+	    if (curProtocol === 'https') {
+	        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+	    }
+	    else {
+	        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+	    }
+	    var s = document.getElementsByTagName("script")[0];
+	    s.parentNode.insertBefore(bp, s);
+	})();
+  </script>
+
+
+
+  
+    <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+
+</head>
+</html>
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">盒子</span>
+  
+
+  <div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">盒子</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/archives/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            博客
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/category/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            分类
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/tag/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            标签
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/link/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            友链
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            关于
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/search/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">文章目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#前言"><span class="toc-text">前言</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#搭建正文"><span class="toc-text">搭建正文 :</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#一、本地与Github的连接"><span class="toc-text">一、本地与Github的连接</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-一些必备的软件"><span class="toc-text">1.一些必备的软件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-注册一个github账号"><span class="toc-text">2.注册一个github账号</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-创建New-Repository"><span class="toc-text">3.创建New Repository</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-配置SSH-Keys"><span class="toc-text">4.配置SSH Keys</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-测试"><span class="toc-text">5.测试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-设置用户信息"><span class="toc-text">6.设置用户信息</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#二、搭建Hexo博客"><span class="toc-text">二、搭建Hexo博客</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-安装Hexo"><span class="toc-text">1.安装Hexo</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-将博客部署到Github"><span class="toc-text">2.将博客部署到Github</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-写博客"><span class="toc-text">3.写博客</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-更换主题"><span class="toc-text">4.更换主题</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-build-a-blog" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">搭建hexo+github博客和其中的一些小问题</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2019.10.03</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>Aruk4s</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/Summary/">Summary</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a><strong>前言</strong></h2><p>趁着国庆放假，终于把自己的博客搭好了，还是挺有成就感得，记录一下</p>
+<h1 id="搭建正文"><a href="#搭建正文" class="headerlink" title="搭建正文 :"></a><strong>搭建正文</strong> :</h1><hr>
+<h2 id="一、本地与Github的连接"><a href="#一、本地与Github的连接" class="headerlink" title="一、本地与Github的连接"></a><strong>一、本地与Github的连接</strong></h2><p>要想搭建好博客，就得先连接到Github上</p>
+<h3 id="1-一些必备的软件"><a href="#1-一些必备的软件" class="headerlink" title="1.一些必备的软件"></a><strong>1.一些必备的软件</strong></h3><ul>
+<li><a href="https://nodejs.org/en/" target="_blank" rel="noopener">Node.js</a><blockquote>
+<p>安装好之后，在CMD中输入<code>node -v</code>和<code>npm -v</code>，如果出现版本号，代表安装成功.</p>
+</blockquote>
+</li>
+<li><a href="https://git-scm.com/" target="_blank" rel="noopener">Git</a><blockquote>
+<p>Git安装好之后，在桌面右键会出现：<img src="https://i.loli.net/2019/10/03/YQEqoC2VR8tf5Dh.png" alt="20191003134123.png"></p>
+</blockquote>
+</li>
+</ul>
+<h3 id="2-注册一个github账号"><a href="#2-注册一个github账号" class="headerlink" title="2.注册一个github账号"></a><strong>2.注册一个github账号</strong></h3><p> 先进入<a href="https://github.com/" target="_blank" rel="noopener">github</a>，然后点击右上角的<strong><em>Sign up</em></strong></p>
+<p> 进入<strong><em>Sign up</em></strong>页面后，按照流程注册账号<br><img src="https://i.loli.net/2019/10/03/gKZiSRB9jDbdfcY.png" alt="20191003115036.png"><br><img src="https://i.loli.net/2019/10/03/1W6STFuaQCDIU7s.png" alt="20191003120216.png"></p>
+<p>这里要注意一下：</p>
+<blockquote>
+<p>个人的网站网址是固定格式：username.github.io(当然之后你也可以自己买域名进行绑定)</p>
+<p>所以注册的时候Username不要乱填，<strong>谨慎谨慎谨慎！！</strong></p>
+</blockquote>
+<h3 id="3-创建New-Repository"><a href="#3-创建New-Repository" class="headerlink" title="3.创建New Repository"></a><strong>3.创建New Repository</strong></h3><p>登陆刚才创建好的Github，点击右上角的 <strong><em>+</em></strong> 号，创建New Repository，之后你所有的博客动态都会在Respoitory更新</p>
+<p><img src="https://i.loli.net/2019/10/03/clVHLgqGdfJ8W6x.png" alt="20191003131029.png"><br><img src="https://i.loli.net/2019/10/03/GI6i4wEpoBc5gQx.png" alt="20191003131223.png"></p>
+<blockquote>
+<p>在创建Repository的时候，Repository name必须是username.github.io<br>不然可能会导致本地和github无法连接。<br>其他的暂时可以忽略，点击Create repository</p>
+</blockquote>
+<h3 id="4-配置SSH-Keys"><a href="#4-配置SSH-Keys" class="headerlink" title="4.配置SSH Keys"></a><strong>4.配置SSH Keys</strong></h3><p>SSH Keys是用来连接本地的git项目和Github的，通过SSH Keys可以使项目保持更新。</p>
+<ul>
+<li><p>检查SSH Keys的设置<br>  <br>检查自己的电脑上是否已经存在SSH Keys。右键打开Git bush here：<br></p>
+  <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ cd ~<span class="regexp">/.ssh</span></span><br></pre></td></tr></table></figure>
+
+<p>  <img src="https://i.loli.net/2019/10/03/atADwRP16d59iFZ.png" alt="20191003140453.png"></p>
+</li>
+</ul>
+<p>出现 <strong>No such file or diectory</strong>，电脑上面还未有SSH Keys</p>
+<ul>
+<li><p>生成新的SSH Keys：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ssh-keygen -t rsa -C <span class="string">"邮件地址@youremail.com"</span></span><br><span class="line">Generating public/private rsa key pair.</span><br><span class="line">Enter file <span class="keyword">in</span> which to save the key (<span class="regexp">/Users/y</span>our_user_directory/.ssh/id_rsa):&lt;回车&gt;</span><br></pre></td></tr></table></figure>
+
+<p>邮箱地址是你的注册github的邮箱，之后系统会提示，要求你输入新密码:</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Enter passphrase (empty <span class="keyword">for</span> no passphrase):&lt;密码&gt;</span><br><span class="line">Enter same passphrase again:&lt;再次输入密码&gt;</span><br></pre></td></tr></table></figure>
+
+<p>密码是作为提交项目时候的一个验证。你可以选择不输入密码，直接设置为空，但是为了安全，建议设置密码。<strong>注意</strong>：<strong>这里输入密码的时候是看不见的</strong><br><img src="https://i.loli.net/2019/10/03/D7VKGMNkr8x4twF.png" alt="20191003142919.png"></p>
+<p>当弹出这样的界面，就成功设置SSH Keys了</p>
+</li>
+</ul>
+<p>然后输入：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ cat ~<span class="regexp">/.ssh/i</span>d_rsa.pub</span><br></pre></td></tr></table></figure>
+
+<p>将输出的内容复制，进到Github个人设置里的相应位置<br><img src="https://i.loli.net/2019/10/03/T1Ek5FHLS3ajC6e.png" alt="20191003144243.png"></p>
+<p>继续选中左边菜单栏的<strong><em>SSH and GPG keys</em></strong>，点击<strong><em>New SSH key</em></strong><br><img src="https://i.loli.net/2019/10/03/54IZmTwNnsejHhv.png" alt="20191003144526.png"></p>
+<blockquote>
+<p>Title随意取</p>
+<p>Key就把刚才复制的，粘贴进去就行</p>
+</blockquote>
+<p>添加完毕以后，你的SSH keys应该是这样 :<img src="https://i.loli.net/2019/10/03/kjhBZVsFUvza3lH.png" alt="6`YTM}$K07RN2U%`TLS)OEN.png"></p>
+<h3 id="5-测试"><a href="#5-测试" class="headerlink" title="5.测试"></a><strong>5.测试</strong></h3><p>回到git bush里面，输入以下代码进行测试：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ssh -T git@github.com</span><br></pre></td></tr></table></figure>
+
+<p>回车，看到以下回显：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1.</span>The authenticity <span class="keyword">of</span> host <span class="string">'GitHub.com (207.97.227.239)'</span> can<span class="string">'t be established.</span></span><br><span class="line"><span class="string">2.RSA key fingerprint is 16:27:ac:a5:76:28:2d:36:63:1b:56:4d:eb:df:a6:48.</span></span><br><span class="line"><span class="string">3.Are you sure you want to continue connecting (yes/no)</span></span><br></pre></td></tr></table></figure>
+
+<p>输入yes，回车（<strong>不能直接回车</strong>）</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Enter passphrase <span class="keyword">for</span> key <span class="string">'/c/Users/Yi/.ssh/id_rsa'</span>:</span><br></pre></td></tr></table></figure>
+
+<p>输入刚才设置的密码，你会看到“Hi，username.You’ve successfully authenticated…”<br>设置成功</p>
+<h3 id="6-设置用户信息"><a href="#6-设置用户信息" class="headerlink" title="6.设置用户信息"></a><strong>6.设置用户信息</strong></h3><p>现在就是完善个人信息</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ git config --global user.name <span class="string">"username"</span></span><br><span class="line">$ git config --global user.email <span class="string">"注册时填写的邮箱"</span></span><br></pre></td></tr></table></figure>
+
+<p>这一步完成，本机就已经和Github连接！！！</p>
+<h2 id="二、搭建Hexo博客"><a href="#二、搭建Hexo博客" class="headerlink" title="二、搭建Hexo博客"></a><strong>二、搭建Hexo博客</strong></h2><p>接下来就是搭建博客的主体</p>
+<h3 id="1-安装Hexo"><a href="#1-安装Hexo" class="headerlink" title="1.安装Hexo"></a><strong>1.安装Hexo</strong></h3><p>利用npm命令安装Hexo</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm install -g hexo</span><br></pre></td></tr></table></figure>
+
+<p>安装完成后输入 <code>hexo -v</code>检验是否安装好</p>
+<ul>
+<li>然后创建一个新的文件夹，作为博客项目文件夹</li>
+</ul>
+<blockquote>
+<p>在本地创建一个文件夹，文件夹名最好与Repository中博客项目同名：username.github.io</p>
+<p>之后所有命令都在这个文件夹里进行</p>
+</blockquote>
+<p>初始化文件夹，安装独立博客的所有文件(该步骤可能会花较长的时间))</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo init</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>安装相关组件</p>
+  <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm install</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>确保Git已经部署</p>
+  <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>本地进行浏览</p>
+  <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ hexo g  <span class="comment">//生成静态网页</span></span><br><span class="line">$ hexo s  <span class="comment">//打开本地服务器</span></span><br></pre></td></tr></table></figure>
+
+<p>  <img src="https://i.loli.net/2019/10/04/7u5lTiQec3BoPhp.png" alt="20191004123455.png"></p>
+<p>  成功打开服务器以后会有以上的提示，按住<code>Ctrl+c</code>关闭服务器，现在可以打开浏览器输入<code>127.0.0.1:4000</code>进行查看了</p>
+</li>
+</ul>
+<p>Hexo会有一个默认的主题：landspace，所以你打开博客应该是这样的<br><img src="https://i.loli.net/2019/10/04/r5TtMIb8icGX6Sp.png" alt="20191004124344.png"></p>
+<h3 id="2-将博客部署到Github"><a href="#2-将博客部署到Github" class="headerlink" title="2.将博客部署到Github"></a><strong>2.将博客部署到Github</strong></h3><p>部署之前，可以在配置文件 <strong><em>_config.yml</em></strong> 中进行一些个性化修改<br><img src="https://i.loli.net/2019/10/04/2d8aHT7IspmiYSA.png" alt="20191004124904.png"></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line">这里贴一份网上看到的  可以复制替换原来的  但是替换之前最好备份 可能会出错</span><br><span class="line">那要么你就对照着看一下改就好</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># Hexo Configuration</span><br><span class="line">## Docs: http://zespia.tw/hexo/docs/configure.html</span><br><span class="line">## Source: https://github.com/tommy351/hexo/</span><br><span class="line"></span><br><span class="line"># Site 这里的配置，哪项配置反映在哪里，可以参考我的博客</span><br><span class="line">title: My Blog #博客名</span><br><span class="line">subtitle: to be continued... #副标题</span><br><span class="line">description: My blog #给搜索引擎看的，对网站的描述，可以自定义</span><br><span class="line">author: Yourname #作者，在博客底部可以看到</span><br><span class="line">email: yourname@yourmail.com #你的联系邮箱</span><br><span class="line">language: zh-CN #中文。如果不填则默认英文</span><br><span class="line"></span><br><span class="line"># URL #这项暂不配置，绑定域名后，欲创建sitemap.xml需要配置该项</span><br><span class="line">## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'</span><br><span class="line">url: http:<span class="comment">//yoursite.com</span></span><br><span class="line">root: <span class="regexp">/</span></span><br><span class="line"><span class="regexp">permalink: :year/</span>:month/:day/:title/</span><br><span class="line">tag_dir: tags</span><br><span class="line">archive_dir: archives</span><br><span class="line">category_dir: categories</span><br><span class="line"></span><br><span class="line"># Writing 文章布局、写作格式的定义，不修改</span><br><span class="line">new_post_name: :title.md # File name of new posts</span><br><span class="line">default_layout: post</span><br><span class="line">auto_spacing: false # Add spaces between asian characters and western characters</span><br><span class="line">titlecase: false # Transform title into titlecase</span><br><span class="line">max_open_file: <span class="number">100</span></span><br><span class="line">filename_case: <span class="number">0</span></span><br><span class="line">highlight:</span><br><span class="line">  enable: <span class="literal">true</span></span><br><span class="line">  backtick_code_block: <span class="literal">true</span></span><br><span class="line">  line_number: <span class="literal">true</span></span><br><span class="line">  tab_replace:</span><br><span class="line"></span><br><span class="line"># Category &amp; Tag</span><br><span class="line">default_category: uncategorized</span><br><span class="line">category_map:</span><br><span class="line">tag_map:</span><br><span class="line"></span><br><span class="line"># Archives 默认值为2，这里都修改为1，相应页面就只会列出标题，而非全文</span><br><span class="line">## 2: Enable pagination</span><br><span class="line">## 1: Disable pagination</span><br><span class="line">## 0: Fully Disable</span><br><span class="line">archive: <span class="number">1</span></span><br><span class="line">category: <span class="number">1</span></span><br><span class="line">tag: <span class="number">1</span></span><br><span class="line"></span><br><span class="line"># Server 不修改</span><br><span class="line">## Hexo uses Connect as a server</span><br><span class="line">## You can customize the logger format as defined in</span><br><span class="line">## http://www.senchalabs.org/connect/logger.html</span><br><span class="line">port: <span class="number">4000</span></span><br><span class="line">logger: <span class="literal">false</span></span><br><span class="line">logger_format:</span><br><span class="line"></span><br><span class="line"># Date / Time format 日期格式，可以修改成自己喜欢的格式</span><br><span class="line">## Hexo uses Moment.js to parse and display date</span><br><span class="line">## You can customize the date format as defined in</span><br><span class="line">## http://momentjs.com/docs/#/displaying/format/</span><br><span class="line">date_format: YYYY-M-D</span><br><span class="line">time_format: H:mm:ss</span><br><span class="line"></span><br><span class="line"># Pagination 每页显示文章数，可以自定义，贴主设置的是10</span><br><span class="line">## Set per_page to 0 to disable pagination</span><br><span class="line">per_page: <span class="number">10</span></span><br><span class="line">pagination_dir: page</span><br><span class="line"></span><br><span class="line"># Disqus Disqus插件，我们会替换成“多说”，不修改</span><br><span class="line">disqus_shortname:</span><br><span class="line"></span><br><span class="line"># Extensions 这里配置站点所用主题和插件，暂时默认</span><br><span class="line">## Plugins: https://github.com/tommy351/hexo/wiki/Plugins</span><br><span class="line">## Themes: https://github.com/tommy351/hexo/wiki/Themes</span><br><span class="line">theme: landscape</span><br><span class="line">exclude_generator:</span><br><span class="line">plugins:</span><br><span class="line">- hexo-generator-feed</span><br><span class="line">- hexo-generator-sitemap</span><br><span class="line"></span><br><span class="line"># Deployment 站点部署到github要配置</span><br><span class="line">## Docs: http://zespia.tw/hexo/docs/deploy.html</span><br><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repository: </span><br><span class="line">  branch: master</span><br></pre></td></tr></table></figure>
+
+<p>修改好之后，打开Github个人主页的Repository，进入到自己的博客项目，复制好项目的SSH码<br><img src="https://i.loli.net/2019/10/04/pRgvEuz3ibGwx4Q.png" alt="20191004125316.png"></p>
+<p>然后打开博客的配置文件 <strong><em>_config.yml</em></strong> 在最后面找到<code>Deployment</code>,将SSH码粘贴到repository后(冒号后面要空一格)</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">deploy:</span><br><span class="line">  type: git</span><br><span class="line">  repository: </span><br><span class="line">  branch: master</span><br></pre></td></tr></table></figure>
+
+<p>然后执行命令（每次修改博客之后都要进行一遍）</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ hexo clean <span class="comment">// 清除存缓（不用每次执行）</span></span><br><span class="line">$ hexo g     <span class="comment">// 修改生成</span></span><br><span class="line">$ hexo s     <span class="comment">// 修改预览（不用每次执行） </span></span><br><span class="line">$ hexo d     <span class="comment">// 修改部署</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>执行hexo d进行博客部署的时候，会需要密码输入,确认身份</p>
+</blockquote>
+<p>过一会儿就能访问<code>username.github.io</code>进行查看了</p>
+<p>到这里搭建博客的工作也圆满结束了</p>
+<h3 id="3-写博客"><a href="#3-写博客" class="headerlink" title="3.写博客"></a><strong>3.写博客</strong></h3><p>在博客的根目录下找到<code>source/_post</code>,空白处Git Bush Here</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo <span class="keyword">new</span> <span class="string">'你想要的文章名字'</span></span><br></pre></td></tr></table></figure>
+
+<p>然后会在这个文件夹里面会生成一个Markdown文件，博客都是用Markdown写的</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">新生成的md文件，会自动生成:</span><br><span class="line">---</span><br><span class="line">title: </span><br><span class="line">date: </span><br><span class="line">categories:</span><br><span class="line">tags:</span><br><span class="line">---</span><br></pre></td></tr></table></figure>
+
+<p>这个模板文件在<code>scaffolds/post.md</code>中，可以进行增删</p>
+<h3 id="4-更换主题"><a href="#4-更换主题" class="headerlink" title="4.更换主题"></a><strong>4.更换主题</strong></h3><p>先进入到博客的根目录，使用clone的方法将主题下载下来</p>
+<p>然后</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cd theme/主题名</span><br><span class="line">$ git pull</span><br></pre></td></tr></table></figure>
+
+<p>回到根目录下，打开 <strong><em>_config.yml</em></strong>，找到<code>theme</code>，然后设置<code>theme:主题名</code>，接着就是</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ hexo g</span><br><span class="line">$ hexo d</span><br></pre></td></tr></table></figure>
+
+<p>过一会儿，主题就换好啦</p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>大体的流程就是这样，这几天搭博客，还是遇到了许多的问题，这里算是做一个总结，以后也方便查看。</p>
+
+    
+  </div>
+
+</article>
+
+
+   
+  <div class="text-center donation">
+    <div class="inner-donation">
+      <span class="btn-donation">Have Fun</span>
+      <div class="donation-body">
+        <div class="tip text-center">by Aruk4s</div>
+        <ul>
+        
+          <li class="item">
+            
+            <img src="/images/1.png" alt="">
+          </li>
+        
+          <li class="item">
+            
+            <img src="/images/2.png" alt="">
+          </li>
+        
+        </ul>
+      </div>
+    </div>
+  </div>
+
+
+   
+  <div class="box-prev-next clearfix">
+    <a class="hide pull-left" href="/">
+        <i class="icon icon-angle-left"></i>
+    </a>
+    <a class="show pull-right" href="/2020/10/12/SSRF从0到1/">
+        <i class="icon icon-angle-right"></i>
+    </a>
+  </div>
+
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">关闭</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/archives/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              博客
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/category/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              分类
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/tag/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              标签
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/link/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              友链
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              关于
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/search/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              搜索
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+</body>
+</html>

