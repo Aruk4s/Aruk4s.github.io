@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <title>JavaWeb_类加载器 | Aruk4s</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="代码审计,Java,">
+  
+
+  <meta name="description" content="类加载机制 .java文件在运行前先通过javac编译成.class文件。之后.class会在java虚拟机中运行。但是在java虚拟机中的运行会经过一系列的类的加载、连接和初始化操作，最后在java虚拟机内存使用自身方法区中字节码二进制数据去引用堆区的Class对象。 双亲委派机制当一个加载器查找class和resource时，会再用委派的机制，即加载器会判断这个class是否被加载，如果没有被">
+<meta name="keywords" content="代码审计,Java">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JavaWeb_类加载器">
+<meta property="og:url" content="http://yoursite.com/2021/08/25/类加载器/index.html">
+<meta property="og:site_name" content="Aruk4s">
+<meta property="og:description" content="类加载机制 .java文件在运行前先通过javac编译成.class文件。之后.class会在java虚拟机中运行。但是在java虚拟机中的运行会经过一系列的类的加载、连接和初始化操作，最后在java虚拟机内存使用自身方法区中字节码二进制数据去引用堆区的Class对象。 双亲委派机制当一个加载器查找class和resource时，会再用委派的机制，即加载器会判断这个class是否被加载，如果没有被">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210822193546774.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210822204531260.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210823213221927.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210823213337430.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210823214549791.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210823215120962.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210824211758784.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210824211833937.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210824211952465.png">
+<meta property="og:updated_time" content="2021-08-29T15:01:31.782Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="JavaWeb_类加载器">
+<meta name="twitter:description" content="类加载机制 .java文件在运行前先通过javac编译成.class文件。之后.class会在java虚拟机中运行。但是在java虚拟机中的运行会经过一系列的类的加载、连接和初始化操作，最后在java虚拟机内存使用自身方法区中字节码二进制数据去引用堆区的Class对象。 双亲委派机制当一个加载器查找class和resource时，会再用委派的机制，即加载器会判断这个class是否被加载，如果没有被">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210822193546774.png">
+
+  
+
+  
+    <link rel="icon" href="/favicon/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbeddx" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css">
+  
+
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-38189205-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?57e94d016e201fba3603a8a2b0263af0";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  
+  <script type="text/javascript">
+	(function(){
+	    var bp = document.createElement('script');
+	    var curProtocol = window.location.protocol.split(':')[0];
+	    if (curProtocol === 'https') {
+	        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+	    }
+	    else {
+	        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+	    }
+	    var s = document.getElementsByTagName("script")[0];
+	    s.parentNode.insertBefore(bp, s);
+	})();
+  </script>
+
+
+
+  
+    <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+
+</head>
+</html>
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">盒子</span>
+  
+
+  <div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">盒子</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/archives/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            博客
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/category/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            分类
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/tag/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            标签
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/link/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            友链
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            关于
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/search/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">文章目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#类加载机制"><span class="toc-text">类加载机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#双亲委派机制"><span class="toc-text">双亲委派机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#类加载器分类"><span class="toc-text">类加载器分类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#JVM默认加载器"><span class="toc-text">JVM默认加载器</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#BootstrapClassLoader（引导类加载器）"><span class="toc-text">BootstrapClassLoader（引导类加载器）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ExtensionsClassLoader（扩展类加载器）"><span class="toc-text">ExtensionsClassLoader（扩展类加载器）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#AppClassLoader（App类加载器）"><span class="toc-text">AppClassLoader（App类加载器）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#UserDefineClassLoader（自定义类加载器）"><span class="toc-text">UserDefineClassLoader（自定义类加载器）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ClassLoader类核心方法"><span class="toc-text">ClassLoader类核心方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#自定义加载器过程"><span class="toc-text">自定义加载器过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#URLClassLoader"><span class="toc-text">URLClassLoader</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#本地加载"><span class="toc-text">本地加载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#远程加载"><span class="toc-text">远程加载</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-类加载器" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">JavaWeb_类加载器</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2021.08.25</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>Aruk4s</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/漏洞复现/">漏洞复现</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <h2 id="类加载机制"><a href="#类加载机制" class="headerlink" title="类加载机制"></a>类加载机制</h2><p> <code>.java</code>文件在运行前先通过javac编译成<code>.class</code>文件。之后<code>.class</code>会在java虚拟机中运行。但是在java虚拟机中的运行会经过一系列的类的加载、连接和初始化操作，最后在java虚拟机内存使用自身方法区中字节码<strong>二进制数据</strong>去引用堆区的Class对象。</p>
+<h2 id="双亲委派机制"><a href="#双亲委派机制" class="headerlink" title="双亲委派机制"></a>双亲委派机制</h2><p>当一个加载器查找class和resource时，会再用委派的机制，即加载器会判断这个class是否被加载，如果没有被加载，它本身是不会进行查找这个class，而是将其返回给父加载器，由父加载器来进行查找。这个过程会一直递归下去，直到<code>BootstrapClassLoader</code>。如果<code>BootstrapClassLoader</code>找到了，直接返回，如果没有再递归下去，最后由自身来查找对象。</p>
+<p>在默认情况下如果没有指定类加载器的情况下，通常会使用<code>AppClassLoader</code>来加载类</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210822193546774.png" alt="image-20210822193546774"></p>
+<p>双亲委派可以避免类的重复加载，直接委派给父类进行加载。同时也是保证Java核心库的类型安全。</p>
+<blockquote>
+<p> 如果通过网络传输一个类，通过双亲委派的模式传递到启动类钟，发现该类已经被加载过，就不会再加载从网络传输过来的类。这样避免了Java库核心API被篡改</p>
+</blockquote>
+<h2 id="类加载器分类"><a href="#类加载器分类" class="headerlink" title="类加载器分类"></a>类加载器分类</h2><p>类加载器分为两大类，一类是JVM自带的类加载器，另一类是用户自定义的加载器</p>
+<h3 id="JVM默认加载器"><a href="#JVM默认加载器" class="headerlink" title="JVM默认加载器"></a>JVM默认加载器</h3><h4 id="BootstrapClassLoader（引导类加载器）"><a href="#BootstrapClassLoader（引导类加载器）" class="headerlink" title="BootstrapClassLoader（引导类加载器）"></a>BootstrapClassLoader（引导类加载器）</h4><p>由<code>C++</code>编写，属于jvm一部分，主要负责加载核心Java库，存储在<code>/jre/lib/rt.jar</code>中</p>
+<h4 id="ExtensionsClassLoader（扩展类加载器）"><a href="#ExtensionsClassLoader（扩展类加载器）" class="headerlink" title="ExtensionsClassLoader（扩展类加载器）"></a>ExtensionsClassLoader（扩展类加载器）</h4><p>由<code>sun.misc.Launcher$ExtClassLoader</code>类实现，用来在<code>/jre/lib/ext</code>或者<code>java.ext.dirs</code>中指明的目录加载java的扩展库</p>
+<h4 id="AppClassLoader（App类加载器）"><a href="#AppClassLoader（App类加载器）" class="headerlink" title="AppClassLoader（App类加载器）"></a>AppClassLoader（App类加载器）</h4><p>由<code>sun.misc.Launcher$AppClassLoader</code>实现。通常我们是使用这个加载类来加载Java应用类</p>
+<h3 id="UserDefineClassLoader（自定义类加载器）"><a href="#UserDefineClassLoader（自定义类加载器）" class="headerlink" title="UserDefineClassLoader（自定义类加载器）"></a>UserDefineClassLoader（自定义类加载器）</h3><p>用户自定义的类加载器，可以加载指定路径的文件</p>
+<h2 id="ClassLoader类核心方法"><a href="#ClassLoader类核心方法" class="headerlink" title="ClassLoader类核心方法"></a>ClassLoader类核心方法</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> Class&lt;?&gt; loadClass(String name, <span class="keyword">boolean</span> resolve)</span><br><span class="line">        <span class="keyword">throws</span> ClassNotFoundException</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (getClassLoadingLock(name)) &#123;</span><br><span class="line">            <span class="comment">// First, check if the class has already been loaded</span></span><br><span class="line">            Class c = findLoadedClass(name);</span><br><span class="line">            <span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">long</span> t0 = System.nanoTime();</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="keyword">if</span> (parent != <span class="keyword">null</span>) &#123;</span><br><span class="line">                        c = parent.loadClass(name, <span class="keyword">false</span>);</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        c = findBootstrapClassOrNull(name);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">                    <span class="comment">// ClassNotFoundException thrown if class not found</span></span><br><span class="line">                    <span class="comment">// from the non-null parent class loader</span></span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="comment">// If still not found, then invoke findClass in order</span></span><br><span class="line">                    <span class="comment">// to find the class.</span></span><br><span class="line">                    <span class="keyword">long</span> t1 = System.nanoTime();</span><br><span class="line">                    c = findClass(name);</span><br><span class="line"></span><br><span class="line">                    <span class="comment">// this is the defining class loader; record the stats</span></span><br><span class="line">                    sun.misc.PerfCounter.getParentDelegationTime().addTime(t1 - t0);</span><br><span class="line">                    sun.misc.PerfCounter.getFindClassTime().addElapsedTimeFrom(t1);</span><br><span class="line">                    sun.misc.PerfCounter.getFindClasses().increment();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (resolve) &#123;</span><br><span class="line">                resolveClass(c);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> c;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>LoadClass：加载指定的java类<br>findClass：查找指定的Java类<br>findLoadedClass：查找JVM已经加载过的类<br>defineClass：定义一个Java类，将字节码解析成Java虚拟机能识别的对象<br>resolveClass：链接指定的Java类</p>
+</blockquote>
+<p>在<code>loadClass</code>中，先调用<code>findLoadedClass</code>方法来判断这个类是否已经被加载过了。如果没有被加载过进入循环使用父加载器来调用<code>loadClass</code>方法，开始递归的过程，不断向上。如果父加载器返回Null，说明递归的过程已经结束，已经开始向下使用JVM内置的加载器。之后再调用<code>findClass</code>方法来查找类，最后通过resolveClass来处理类</p>
+<h2 id="自定义加载器过程"><a href="#自定义加载器过程" class="headerlink" title="自定义加载器过程"></a>自定义加载器过程</h2><p>当我们需要动态加载一些东西，这个时候往往需要自定义加载器。自定义加载器步骤如下：</p>
+<blockquote>
+<ol>
+<li>编写一个类，这个类需要继承ClassLoader</li>
+<li>重写findClass()</li>
+<li>在findClass()方法中调用defineClass()方法</li>
+</ol>
+</blockquote>
+<p>先编写一个<code>Test</code>类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.test;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">method</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"This is a test"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>然后使用javac来进行编译</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210822204531260.png" alt="image-20210822204531260"></p>
+<p>将<code>.class</code>文件转换为byte类型</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.test;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> sun.misc.IOUtils;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.FileInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.FileNotFoundException;</span><br><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.io.InputStream;</span><br><span class="line"><span class="keyword">import</span> java.util.Arrays;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ulits</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        InputStream fis = <span class="keyword">new</span> FileInputStream(<span class="string">"F:\\JAVA\\Project\\Java_test\\src\\com\\test\\Test.class"</span>);</span><br><span class="line">        <span class="keyword">byte</span>[] bytes = IOUtils.readFully(fis, -<span class="number">1</span>, <span class="keyword">false</span>);</span><br><span class="line">        System.out.println(Arrays.toString(bytes));</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210823213221927.png" alt="image-20210823213221927"></p>
+<p>然后自定义加载器类，将转换后的字节码填入并编译运行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">package com.test;</span><br><span class="line"></span><br><span class="line">import java.lang.reflect.Method;</span><br><span class="line"></span><br><span class="line">public class classloader extends ClassLoader&#123;</span><br><span class="line">    private static String testclassname= &quot;com.test.Test&quot;;</span><br><span class="line">    //转换byte后的字节码</span><br><span class="line">    private static byte[] classbytes= new byte[]&#123;-54, -2, -70, -66, 0, 0, 0, 52, 0, 17, 10, 0, 4, 0, 13, 8, 0, 14, 7, 0, 15, 7, 0, 16, 1, 0, 6, 60, 105, 110, 105, 116, 62, 1, 0, 3, 40, 41, 86, 1, 0, 4, 67, 111, 100, 101, 1, 0, 15, 76, 105, 110, 101, 78, 117, 109, 98, 101, 114, 84, 97, 98, 108, 101, 1, 0, 6, 109, 101, 116, 104, 111, 100, 1, 0, 20, 40, 41, 76, 106, 97, 118, 97, 47, 108, 97, 110, 103, 47, 83, 116, 114, 105, 110, 103, 59, 1, 0, 10, 83, 111, 117, 114, 99, 101, 70, 105, 108, 101, 1, 0, 9, 84, 101, 115, 116, 46, 106, 97, 118, 97, 12, 0, 5, 0, 6, 1, 0, 14, 84, 104, 105, 115, 32, 105, 115, 32, 97, 32, 116, 101, 115, 116, 1, 0, 13, 99, 111, 109, 47, 116, 101, 115, 116, 47, 84, 101, 115, 116, 1, 0, 16, 106, 97, 118, 97, 47, 108, 97, 110, 103, 47, 79, 98, 106, 101, 99, 116, 0, 33, 0, 3, 0, 4, 0, 0, 0, 0, 0, 2, 0, 1, 0, 5, 0, 6, 0, 1, 0, 7, 0, 0, 0, 29, 0, 1, 0, 1, 0, 0, 0, 5, 42, -73, 0, 1, -79, 0, 0, 0, 1, 0, 8, 0, 0, 0, 6, 0, 1, 0, 0, 0, 3, 0, 1, 0, 9, 0, 10, 0, 1, 0, 7, 0, 0, 0, 27, 0, 1, 0, 1, 0, 0, 0, 3, 18, 2, -80, 0, 0, 0, 1, 0, 8, 0, 0, 0, 6, 0, 1, 0, 0, 0, 5, 0, 1, 0, 11, 0, 0, 0, 2, 0, 12&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    @Override</span><br><span class="line">    protected Class&lt;?&gt; findClass(String name) throws ClassNotFoundException &#123;</span><br><span class="line">        //只处理com.test.test类</span><br><span class="line">        if (name.equals(testclassname)) &#123;</span><br><span class="line">            //将一个字节流定义为一个类。</span><br><span class="line">            return defineClass(testclassname, classbytes, 0, classbytes.length);</span><br><span class="line">        &#125;</span><br><span class="line">        return super.findClass(name);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public static void main(String[] args) throws Exception &#123;</span><br><span class="line">        //创建加载器</span><br><span class="line">        classloader classloadertest = new classloader();</span><br><span class="line">        //使用我们自定义的类去加载testclassname</span><br><span class="line">        Class aClass = classloadertest.loadClass(testclassname);</span><br><span class="line">        //反射创建test类对象</span><br><span class="line">        Object o = aClass.newInstance();</span><br><span class="line">        //反射获取method方法</span><br><span class="line">        Method method = o.getClass().getMethod(&quot;method&quot;);</span><br><span class="line">        //反射去调用执行method方法</span><br><span class="line">        String str = (String) method.invoke(o);</span><br><span class="line">        System.out.println(str);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210823213337430.png" alt="image-20210823213337430"></p>
+<h2 id="URLClassLoader"><a href="#URLClassLoader" class="headerlink" title="URLClassLoader"></a>URLClassLoader</h2><p><code>URLClassLoader</code>继承了<code>ClassLoader</code>类，可以加载本地文件或者远程加载<code>jar</code>包</p>
+<h3 id="本地加载"><a href="#本地加载" class="headerlink" title="本地加载"></a>本地加载</h3><p>测试代码：</p>
+<p>test.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.urlclassloader;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">test</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Test"</span>);</span><br><span class="line">        <span class="keyword">try</span>&#123;</span><br><span class="line">            Runtime.getRuntime().exec(<span class="string">"cmd /c calc.exe"</span>);</span><br><span class="line">        &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过<code>javac</code>编译为<code>.class</code>文件</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210823214549791.png" alt="image-20210823214549791"></p>
+<p>在编写<code>ClassLoader.java</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.Classloader;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.File;</span><br><span class="line"><span class="keyword">import</span> java.net.URI;</span><br><span class="line"><span class="keyword">import</span> java.net.URL;</span><br><span class="line"><span class="keyword">import</span> java.net.URLClassLoader;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ClassloaderTest</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">        File file = <span class="keyword">new</span> File(<span class="string">"F:\\JAVA\\Project\\Java_test\\src"</span>);</span><br><span class="line">        URI uri = file.toURI();</span><br><span class="line">        URL url = uri.toURL();<span class="comment">//使用File类获取文件路径</span></span><br><span class="line"></span><br><span class="line">        URLClassLoader classLoader = <span class="keyword">new</span> URLClassLoader(<span class="keyword">new</span> URL[]&#123;url&#125;);<span class="comment">//获取url地址</span></span><br><span class="line">        Class clazz = classLoader.loadClass(<span class="string">"com.urlclassloader.test"</span>);<span class="comment">//获取test.class所含包名</span></span><br><span class="line">        clazz.newInstance();<span class="comment">//实例化对象</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210823215120962.png" alt="image-20210823215120962"></p>
+<h3 id="远程加载"><a href="#远程加载" class="headerlink" title="远程加载"></a>远程加载</h3><p>test.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.urlclassloader;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">test</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Test"</span>);</span><br><span class="line">        <span class="keyword">try</span>&#123;</span><br><span class="line">            Runtime.getRuntime().exec(<span class="string">"cmd /c calc.exe"</span>);</span><br><span class="line">        &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过javac编译</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210824211758784.png" alt="image-20210824211758784"></p>
+<p>然后放到tomcat目录下</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210824211833937.png" alt="image-20210824211833937"></p>
+<p>urlclassLoader.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.urlclassloader;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.net.URL;</span><br><span class="line"><span class="keyword">import</span> java.net.URLClassLoader;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">urlclassLoader</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span> <span class="params">(String[]args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        URL url = <span class="keyword">new</span> URL(<span class="string">"http://127.0.0.1:8080/"</span>);</span><br><span class="line">        URLClassLoader classLoader = <span class="keyword">new</span> URLClassLoader(<span class="keyword">new</span> URL[]&#123;url&#125;);</span><br><span class="line">        Class clazz = classLoader.loadClass(<span class="string">"com.urlclassloader.test"</span>);</span><br><span class="line">        clazz.newInstance();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210824211952465.png" alt="image-20210824211952465"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>在实际环境中，我们可以通过自定加载器和恶意的类来加载我们的webshell，同时这也是对webshell加密的一种方式。</p>
+
+    
+  </div>
+
+</article>
+
+
+   
+  <div class="text-center donation">
+    <div class="inner-donation">
+      <span class="btn-donation">Have Fun</span>
+      <div class="donation-body">
+        <div class="tip text-center">by Aruk4s</div>
+        <ul>
+        
+          <li class="item">
+            
+            <img src="/images/1.png" alt="">
+          </li>
+        
+          <li class="item">
+            
+            <img src="/images/2.png" alt="">
+          </li>
+        
+        </ul>
+      </div>
+    </div>
+  </div>
+
+
+   
+  <div class="box-prev-next clearfix">
+    <a class="show pull-left" href="/2021/08/17/反射/">
+        <i class="icon icon-angle-left"></i>
+    </a>
+    <a class="hide pull-right" href="/">
+        <i class="icon icon-angle-right"></i>
+    </a>
+  </div>
+
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">关闭</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/archives/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              博客
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/category/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              分类
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/tag/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              标签
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/link/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              友链
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              关于
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/search/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              搜索
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+</body>
+</html>

